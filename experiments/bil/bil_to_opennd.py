@@ -49,4 +49,5 @@ for z_start in tqdm(range(z_progress, vol.shape[2], ncpu)):
 
     for f in os.listdir(files_dir):
         os.remove(os.path.join(files_dir, f))
+    break 
 
