@@ -5,6 +5,8 @@ from joblib import Parallel, delayed
 import multiprocessing
 import os
 import warnings
+from tqdm import tqdm
+import numpy as np
 
 ncpu = 12
 precomputed_path = "s3://open-neurodata/brainlit/bil1"
@@ -19,7 +21,7 @@ with open(progress_file) as f:
     last_line = line
 z_progress = int(last_line)
 
-print(f"Starting at {}")
+print(f"Starting at {z_progress}")
 
 warnings.filterwarnings("ignore")
 
@@ -27,16 +29,17 @@ def upload_z(z):
     filepath = '/data/tathey1/bil/files_bay/' + str(z) + '.tif'
 
     z2 = z+1
-    url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + z2.toString("D5") + '_CH1.tif'
+    url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + str(z2).zfill(5) + '_CH1.tif'
 
     r = urllib.request.urlopen(url)
     with open(filepath,'wb') as f:
         f.write(r.read())
 
     im = io.imread(filepath)
-    vol[:,:,z] = im.T
+    im = np.expand_dims(np.expand_dims(im.T, axis=2), axis=3)
+    vol[:,:,z,0] = im
 
-for z_start in range(z_progress, vol.shape[2], ncpu):
+for z_start in tqdm(range(z_progress, vol.shape[2], ncpu)):
 
     with open(progress_file, 'a') as f:
         f.write('\n')
