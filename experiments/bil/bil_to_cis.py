@@ -37,6 +37,7 @@ for z_start in tqdm(range(18, 10578, 165)):
         im = np.expand_dims(io.imread(filepath), axis=2)
         chunk[:,:,z-18] = im[2000:18000,4000:28000,0]
         print(im.shape)
+        print(im.dtype)
         raise ValueError()
 
 
