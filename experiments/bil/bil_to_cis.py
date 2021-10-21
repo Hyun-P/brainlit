@@ -7,11 +7,11 @@ import os
 import warnings
 from tqdm import tqdm
 import numpy as np
-import urllib3, shutil
+import subprocess
 
 ncpu = 12
 cis_path = "/data/jacsstorage/samples/tathey/bil1"
-files_dir = '/data/jacsstorage/samples/tathey/files_bay'
+files_dir = '/data/jacsstorage/samples/tathey/files_bay/'
 progress_file = "/cis/home/tathey/progress.txt"
 
 with open(progress_file) as f:
@@ -30,17 +30,11 @@ for z_start in tqdm(range(18, 10578, 165)):
     
     #download
     for z in range(z_start, z_start+165):
-        filepath = '/data/tathey1/bil/files_bay/' + str(z) + '.tif'
+        filepath = files_dir + str(z) + '.tif'
         url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + str(z).zfill(5) + '_CH1.tif'
+        # url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_00001_CH1.tif'
+        subprocess.run(["wget", "-O", filepath, url])
         
-        c = urllib3.PoolManager()
-        with c.request('GET', url, preload_content=False) as res, open(filepath, 'wb') as out_file:
-            shutil.copyfileobj(res, out_file)
-
-
-        # r = urllib.request.urlopen(url)
-        # with open(filepath,'wb') as f:
-        #     f.write(r.read())
         im = io.imread(filepath)
         print(im.shape)
         raise ValueError()
