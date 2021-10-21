@@ -21,7 +21,6 @@ def make_octree(dirs, levels_left):
             for i in range(1,9):
                 new_path = os.path.join(dir, str(i))
                 new_paths.append(new_path)
-                print(new_path)
                 if not os.path.exists(new_path):
                     os.makedirs(new_path)
 
@@ -80,5 +79,4 @@ for z_start in tqdm(range(18, 10578, ncpu)):
 
     for f in os.listdir(files_dir):
         os.remove(os.path.join(files_dir, f))
-    break 
 
