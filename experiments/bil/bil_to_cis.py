@@ -11,7 +11,7 @@ import numpy as np
 ncpu = 12
 cis_path = "/data/jacsstorage/samples/tathey/bil1"
 files_dir = '/data/jacsstorage/samples/tathey/files_bay'
-progress_file = "/home/tathey/progress.txt"
+progress_file = "/cis/home/tathey/progress.txt"
 
 with open(progress_file) as f:
     for line in f:
