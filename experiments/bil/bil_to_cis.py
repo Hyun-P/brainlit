@@ -32,10 +32,10 @@ for z_start in tqdm(range(18, 10578, 165)):
     for z in range(z_start, z_start+165):
         filepath = files_dir + str(z) + '.tif'
         url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + str(z).zfill(5) + '_CH1.tif'
-        # url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_00001_CH1.tif'
         subprocess.run(["wget", "-O", filepath, url])
         
-        im = io.imread(filepath)
+        im = np.expand_dims(io.imread(filepath), axis=2)
+        chunk[:,:,z-18] = im[2000:18000,4000:28000,0]
         print(im.shape)
         raise ValueError()
 
