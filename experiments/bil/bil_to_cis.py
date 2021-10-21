@@ -30,7 +30,7 @@ for z_start in tqdm(range(18, 10578, 165)):
     #download
     for z in range(z_start, z_start+165):
         filepath = '/data/tathey1/bil/files_bay/' + str(z) + '.tif'
-        url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + str(z2).zfill(5) + '_CH1.tif'
+        url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + str(z).zfill(5) + '_CH1.tif'
         r = urllib.request.urlopen(url)
         with open(filepath,'wb') as f:
             f.write(r.read())
