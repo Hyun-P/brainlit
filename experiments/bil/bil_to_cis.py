@@ -7,6 +7,7 @@ import os
 import warnings
 from tqdm import tqdm
 import numpy as np
+import urllib3, shutil
 
 ncpu = 12
 cis_path = "/data/jacsstorage/samples/tathey/bil1"
@@ -31,7 +32,12 @@ for z_start in tqdm(range(18, 10578, 165)):
     for z in range(z_start, z_start+165):
         filepath = '/data/tathey1/bil/files_bay/' + str(z) + '.tif'
         url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_373641-18462/CH1/18462_' + str(z).zfill(5) + '_CH1.tif'
-        urllib.request.urlretrieve(url, filepath)
+        
+        c = urllib3.PoolManager()
+        with c.request('GET', url, preload_content=False) as res, open(filepath, 'wb') as out_file:
+            shutil.copyfileobj(res, out_file)
+
+
         # r = urllib.request.urlopen(url)
         # with open(filepath,'wb') as f:
         #     f.write(r.read())
