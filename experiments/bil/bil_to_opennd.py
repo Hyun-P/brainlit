@@ -44,10 +44,9 @@ for z_start in tqdm(range(z_progress, vol.shape[2], ncpu)):
     with open(progress_file, 'a') as f:
         f.write('\n')
         f.write(f'{z_start}')
-
-    Parallel(n_jobs=ncpu)(delayed(upload_z)(z) for z in range(z_start, z_start+ncpu))
+    z2 = np.amin([z_start+ncpu, vol.shape[2]])
+    Parallel(n_jobs=ncpu)(delayed(upload_z)(z) for z in range(z_start, z2))
 
     for f in os.listdir(files_dir):
-        os.remove(os.path.join(files_dir, f))
-    break 
+        os.remove(os.path.join(files_dir, f)) 
 
