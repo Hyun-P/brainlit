@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 import numpy as np
 from skimage import morphology
+from skimage.measure import regionprops
 import scipy.ndimage as ndi
 from scipy.special import logsumexp
 import random
@@ -41,6 +42,7 @@ class most_probable_neuron_path:
         # standard parameters
         self.image = image
         self.labels = labels
+        self.regprops = regionprops(labels)
         self.frag_orientation_length = frag_orientation_length
         self.res = resolution
         self.coef_dist = coef_dist
@@ -151,7 +153,7 @@ class most_probable_neuron_path:
 
             mask = labels == component
 
-            rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
+            rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(component, pad=1)
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
             skel = morphology.skeletonize_3d(mask)
@@ -246,29 +248,27 @@ class most_probable_neuron_path:
 
         return ends
 
-    def compute_bounds(self, label, pad):
+    def compute_bounds(self, comp, pad):
         """compute coordinates of bounding box around a masked object, with given padding
 
         Args:
-            label (np.array): mask of the object
+            comp (int): component id
             pad (float): padding around object in um
 
         Returns:
             ints: integer coordinates of bounding box
         """
-        labels = self.labels
         res = self.res
+        labels = self.labels
 
-        r = np.any(label, axis=(1, 2))
-        c = np.any(label, axis=(0, 2))
-        z = np.any(label, axis=(0, 1))
-        rmin, rmax = np.where(r)[0][[0, -1]]
+        rmin, cmin, zmin, rmax, cmax, zmax = self.regprops[comp]['bbox']
+        
         rmin = np.amax((0, math.floor(rmin - pad / res[0])))
         rmax = np.amin((labels.shape[0], math.ceil(rmax + (pad + 1) / res[0])))
-        cmin, cmax = np.where(c)[0][[0, -1]]
+
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
         cmax = np.amin((labels.shape[1], math.ceil(cmax + (pad + 1) / res[1])))
-        zmin, zmax = np.where(z)[0][[0, -1]]
+
         zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
         zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / res[2])))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
