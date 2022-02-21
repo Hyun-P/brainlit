@@ -22,6 +22,7 @@ def getImage(fileObj):
 
 url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_362188-191815/CH1_0.35_100um/'
 files = getFilesHttp(url, "tif")
+print(files)
 
 for fileObj in files:
     image = getImage(fileObj)
