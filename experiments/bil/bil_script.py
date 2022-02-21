@@ -33,13 +33,14 @@ def download_image():
     files = [fsspec.open(x,'rb') for x in files]
 
     image = getImage(files[0])
-    image_zarr = zarr.zeros((len(files), image.shape[0], image.shape[1]), chunks=(1,1000,1000), dtype=image.dtype)
+    #image_zarr = zarr.zeros((len(files), image.shape[0], image.shape[1]), chunks=(1,1000,1000), dtype=image.dtype)
+    image_zarr = zarr.open("data/tathey1/bil/image.zarr", mode='w', shape=(len(files), image.shape[0], image.shape[1]), chunks=(1,1000, 1000), dtype=image.dtype)
 
     for i, fileObj in enumerate(tqdm(files)):
         image = getImage(fileObj)
         image_zarr[i,:,:] = image
 
-    zarr.save("data/tathey1/bil/image.zarr", image_zarr)
+    #zarr.save("data/tathey1/bil/image.zarr", image_zarr)
 
 
 
@@ -59,6 +60,6 @@ def viterbrain():
     sg.compute_states()
     sg.compute_edge_weights()
 
-viterbrain()
+download_image()
 
 
