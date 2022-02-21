@@ -51,7 +51,7 @@ def viterbrain():
         ilastik_project_path="/data/tathey1/bil/ilaztik/bil_slice.ilp",
         chunk_size=[5,1000,1000],
         soma_coords=[],
-        parallel=12,
+        parallel=16,
     )
 
     sg.compute_frags()
@@ -60,6 +60,6 @@ def viterbrain():
     sg.compute_states()
     sg.compute_edge_weights()
 
-download_image()
+viterbrain()
 
 
