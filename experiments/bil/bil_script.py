@@ -1,6 +1,8 @@
 import fsspec, requests
 from bs4 import BeautifulSoup
 from skimage import io
+import PIL.Image
+PIL.Image.MAX_IMAGE_PIXELS = 1056323868
 
 def getFilesHttp(url: str,ext: str) -> list:
     def listFD(url, ext=''):
@@ -23,7 +25,6 @@ def getImage(fileObj):
 url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_362188-191815/CH1_0.35_100um/'
 files = sorted(getFilesHttp(url, "tif"))
 files = [fsspec.open(x,'rb') for x in files]
-print(files)
 
 for fileObj in files:
     image = getImage(fileObj)
