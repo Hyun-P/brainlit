@@ -22,7 +22,7 @@ def getFilesHttp(url: str,ext: str) -> list:
 
 def getImage(fileObj):
     with fileObj as f:
-        print('Reading {} \n'.format(f))
+        #print('Reading {} \n'.format(f))
         return io.imread(f)
 
 url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_362188-191815/CH1_0.35_100um/'
@@ -30,11 +30,11 @@ files = sorted(getFilesHttp(url, "tif"))
 files = [fsspec.open(x,'rb') for x in files]
 
 image = getImage(files[0])
-image_zarr = zarr.zeros((len(files, image.shape[0], image.shape[1])), chunks=(1,1000,1000), dtype=image.dtype)
+image_zarr = zarr.zeros((len(files), image.shape[0], image.shape[1]), chunks=(1,1000,1000), dtype=image.dtype)
 
 for i, fileObj in enumerate(tqdm(files)):
     image = getImage(fileObj)
     image_zarr[i,:,:] = image
-    
+
 zarr.save("data/tathey1/bil/image.zarr", image_zarr)
 
