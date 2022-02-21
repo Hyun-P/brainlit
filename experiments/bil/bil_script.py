@@ -21,7 +21,8 @@ def getImage(fileObj):
         return io.imread(f)
 
 url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_362188-191815/CH1_0.35_100um/'
-files = getFilesHttp(url, "tif")
+files = sorted(getFilesHttp(url, "tif"))
+files = [fsspec.open(x,'rb') for x in files]
 print(files)
 
 for fileObj in files:
