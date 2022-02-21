@@ -54,6 +54,9 @@ def viterbrain():
         parallel=16,
     )
 
+    sg.predict(
+        data_bin="/data/tathey1/bil/files_bay/"
+    )
     sg.compute_frags()
     sg.compute_soma_lbls()
     sg.compute_image_tiered()
