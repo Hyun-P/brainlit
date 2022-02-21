@@ -34,7 +34,7 @@ def download_image():
 
     image = getImage(files[0])
     #image_zarr = zarr.zeros((len(files), image.shape[0], image.shape[1]), chunks=(1,1000,1000), dtype=image.dtype)
-    image_zarr = zarr.open("data/tathey1/bil/image.zarr", mode='w', shape=(len(files), image.shape[0], image.shape[1]), chunks=(1,1000, 1000), dtype=image.dtype)
+    image_zarr = zarr.open("/data/tathey1/bil/image.zarr", mode='w', shape=(len(files), image.shape[0], image.shape[1]), chunks=(1,1000, 1000), dtype=image.dtype)
 
     for i, fileObj in enumerate(tqdm(files)):
         image = getImage(fileObj)
