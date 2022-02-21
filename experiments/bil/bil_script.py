@@ -1,7 +1,10 @@
+import chunk
 import fsspec, requests
 from bs4 import BeautifulSoup
 from skimage import io
 import PIL.Image
+import zarr
+from tqdm import tqdm
 PIL.Image.MAX_IMAGE_PIXELS = 1056323868
 
 def getFilesHttp(url: str,ext: str) -> list:
@@ -26,6 +29,12 @@ url = 'https://download.brainimagelibrary.org/df/75/df75626840c76c15/mouseID_362
 files = sorted(getFilesHttp(url, "tif"))
 files = [fsspec.open(x,'rb') for x in files]
 
-for fileObj in files:
+image = getImage(files[0])
+image_zarr = zarr.zeros((len(files, image.shape[0], image.shape[1])), chunks=(1,1000,1000), dtype=image.dtype)
+
+for i, fileObj in enumerate(tqdm(files)):
     image = getImage(fileObj)
-    print(image.shape)
+    image_zarr[i,:,:] = image
+    
+zarr.save("data/tathey1/bil/image.zarr", image_zarr)
+
