@@ -148,6 +148,8 @@ class state_generation:
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
 
+        num_chunks_per_block = int(10**10 / np.prod(chunk_size))
+
         specifications = []
 
         for x in np.arange(0, image.shape[0], chunk_size[0]):
@@ -174,6 +176,10 @@ class state_generation:
                             "soma_coords": soma_coords_new,
                         }
                     )
+        specifications = [
+            specifications[x : x + num_chunks_per_block]
+            for x in range(0, len(specifications), num_chunks_per_block)
+        ]
 
         return specifications
 
@@ -210,8 +216,9 @@ class state_generation:
         ) = image_process.remove_somas(
             soma_coords, labels, im_processed, res=self.resolution, verbose=False
         )
+
         mask = labels > 0
-        mask2 = image_process.removeSmallCCs(mask, 25)
+        mask2 = image_process.removeSmallCCs(mask, 25, verbose=False)
         image_iterative[mask & (~mask2)] = 0
 
         states, comp_to_states = image_process.split_frags_place_points(
@@ -247,37 +254,42 @@ class state_generation:
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
         image = zarr.open(self.image_path, mode="r")
-        fragments = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
-        )
         items = self.image_path.split(".")
         frag_fname = items[0] + "_labels.zarr"
 
-        print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
-
-        specifications = self._get_frag_specifications()
-
-        results = Parallel(n_jobs=self.parallel)(
-            delayed(self._split_frags_thread)(
-                specification["corner1"],
-                specification["corner2"],
-                specification["soma_coords"],
-            )
-            for specification in specifications
+        fragments = zarr.open(
+            frag_fname,
+            mode="w",
+            shape=np.squeeze(image.shape),
+            chunks=image.chunks,
+            dtype="uint16",
         )
 
+        print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
+
+        specification_blocks = self._get_frag_specifications()
+
         max_label = 0
-        for result in results:
-            corner1, corner2, labels = result
-            labels[labels > 0] += max_label
-            max_label = np.amax([max_label, np.amax(labels)])
-            fragments[
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ] = labels
+        for specifications in specification_blocks:
+            results = Parallel(n_jobs=self.parallel)(
+                delayed(self._split_frags_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                    specification["soma_coords"],
+                )
+                for specification in specifications
+            )
+
+            for result in results:
+                corner1, corner2, labels = result
+                labels[labels > 0] += max_label
+                max_label = np.amax([max_label, np.amax(labels)])
+                fragments[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = labels
         print(f"*****************Number of components: {max_label}*******************")
-        zarr.save(frag_fname, fragments)
 
         self.fragment_path = frag_fname
 
