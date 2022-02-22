@@ -51,7 +51,7 @@ def viterbrain():
         ilastik_project_path="/data/tathey1/bil/ilastik/bil_slice.ilp",
         chunk_size=[5,1000,1000],
         soma_coords=[],
-        parallel=1,
+        parallel=16,
         prob_path="/data/tathey1/bil/image_probs.zarr"
     )
 
