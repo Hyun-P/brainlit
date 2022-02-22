@@ -268,6 +268,7 @@ class state_generation:
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
         specification_blocks = self._get_frag_specifications()
+        print(f"first block: {specification_blocks[0][0]}")
 
         max_label = 0
         for specifications in specification_blocks:
