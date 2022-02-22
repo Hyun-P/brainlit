@@ -52,11 +52,12 @@ def viterbrain():
         chunk_size=[5,1000,1000],
         soma_coords=[],
         parallel=16,
+        prob_path="/data/tathey1/bil/image_probs.zarr"
     )
 
-    sg.predict(
-        data_bin="/data/tathey1/bil/files_bay/"
-    )
+    # sg.predict(
+    #     data_bin="/data/tathey1/bil/files_bay/"
+    # )
     sg.compute_frags()
     sg.compute_soma_lbls()
     sg.compute_image_tiered()
