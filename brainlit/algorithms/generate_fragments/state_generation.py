@@ -196,7 +196,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and fragment image
         """
-        print(f"Processing @corner: {corner1}")
+        print(f"Processing @corner: {corner1} to {corner2}")
         threshold = 0.9
 
         prob = zarr.open(self.prob_path, mode="r")
@@ -231,6 +231,7 @@ class state_generation:
             comp_to_states=comp_to_states,
             verbose=False,
         )
+
 
         new_labels = image_process.split_frags_split_comps(
             labels, new_soma_masks, states, comp_to_states, verbose=False
@@ -270,7 +271,8 @@ class state_generation:
         specification_blocks = self._get_frag_specifications()
 
         max_label = 0
-        for specifications in specification_blocks:
+        for i, specifications in enumerate(specification_blocks):
+            print(f"Block {i}: {specification_blocks[0]}, {specification_blocks[-1]}")
             results = Parallel(n_jobs=self.parallel)(
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
