@@ -272,7 +272,7 @@ class state_generation:
 
         max_label = 0
         for i, specifications in enumerate(specification_blocks):
-            print(f"Block {i}: {specification_blocks[0]}, {specification_blocks[-1]}")
+            print(f"Block {i}: {specifications[0]}, {specifications[-1]}")
             results = Parallel(n_jobs=self.parallel)(
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
