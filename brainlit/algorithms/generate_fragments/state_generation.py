@@ -148,7 +148,7 @@ class state_generation:
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
 
-        num_chunks_per_block = int(10**10 / np.prod(chunk_size))
+        num_chunks_per_block = int(10**9 / np.prod(chunk_size))
 
         specifications = []
 
