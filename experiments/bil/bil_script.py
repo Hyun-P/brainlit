@@ -49,7 +49,7 @@ def viterbrain():
         image_path="/data/tathey1/bil/image.zarr",
         ilastik_program_path="/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
         ilastik_project_path="/data/tathey1/bil/ilastik/bil_slice.ilp",
-        chunk_size=[5,1000,1000],
+        chunk_size=[5,500,500],
         soma_coords=[],
         parallel=16,
         prob_path="/data/tathey1/bil/image_probs.zarr"
