@@ -1,4 +1,5 @@
 import chunk
+import numpy as np
 import fsspec, requests
 from bs4 import BeautifulSoup
 from skimage import io
@@ -42,7 +43,16 @@ def download_image():
 
     #zarr.save("data/tathey1/bil/image.zarr", image_zarr)
 
-
+def flip():
+    z = zarr.open("/data/tathey1/bil/image_probs.zarr", "w")
+    for x1 in tqdm(range(0, z.shape[0], 5), desc="x"):
+        x2 = np.amin([x1+5,z.shape[0]])
+        
+        for y1 in tqdm(range(0, z.shape[1], 500), desc="y", leave=False):
+            y2 = np.amin([y1+500,z.shape[1]])
+            for z1 in range(0, z.shape[2], 500):
+                z2 = np.amin([z1+500,z.shape[2]])
+                z[x1:x2,y1:y2,z1:z2] =  1-z[x1:x2,y1:y2,z1:z2]
 
 def viterbrain():
     sg = state_generation(
@@ -65,6 +75,6 @@ def viterbrain():
     sg.compute_states()
     sg.compute_edge_weights()
 
-viterbrain()
+flip()
 
 
