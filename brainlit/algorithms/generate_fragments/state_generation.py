@@ -93,11 +93,12 @@ class state_generation:
             stderr=subprocess.PIPE,
         )
 
-    def predict(self, data_bin: str) -> None:
+    def predict(self, data_bin: str, pos_class: int) -> None:
         """Run ilastik on zarr image
 
         Args:
             data_bin (str): path to directory to store intermediate files
+            pos_class (int): class label in ilastik output that represents foreground
         """
         image = zarr.open(self.image_path, mode="r")
         probabilities = zarr.zeros(
@@ -135,7 +136,7 @@ class state_generation:
                         z2 = np.amin([z + chunk_size[2], image.shape[2]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
-                        pred = pred[:, :, :, 1]
+                        pred = pred[:, :, :, pos_class]
 
                         probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
