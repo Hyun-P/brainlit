@@ -572,10 +572,7 @@ class state_generation:
         components = unq[unq != 0]
 
         results = []
-        for component in tqdm(
-            components,
-            desc=f"Computing state representations @corner {corner1}-{corner2}",
-        ):
+        for component in components:
             mask = labels == component
 
             if component in self.soma_lbls:
