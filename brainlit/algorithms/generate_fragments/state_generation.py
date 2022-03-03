@@ -188,7 +188,6 @@ class state_generation:
         self,
         corner1: List[int],
         corner2: List[int],
-        data_bin: str,
         soma_coords: List[list] = [],
     ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute fragments of image chunk
@@ -261,7 +260,7 @@ class state_generation:
         # np.save(fname, new_labels)
         return (corner1, corner2, new_labels)
 
-    def compute_frags(self, data_bin: str) -> None:
+    def compute_frags(self) -> None:
         """Compute all fragments for image"""
         image = zarr.open(self.image_path, mode="r")
         items = self.image_path.split(".")
@@ -285,7 +284,6 @@ class state_generation:
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
                     specification["corner2"],
-                    data_bin,
                     specification["soma_coords"],
                 )
                 for specification in tqdm(

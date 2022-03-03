@@ -61,7 +61,7 @@ def viterbrain():
     #     pos_class = 0
     # )
 
-    sg.compute_frags(data_bin="/data/tathey1/bil/files_bay/")
+    sg.compute_frags()
     sg.compute_soma_lbls()
     sg.compute_image_tiered()
     sg.compute_states()
