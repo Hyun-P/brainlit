@@ -286,9 +286,8 @@ class state_generation:
                 )
                 for specification in specifications
             )
-            print(f"Writing block {i}: {specifications[0]}, {specifications[-1]}")
 
-            for result in results:
+            for result in tqdm(results, desc = f"Writing block {i}: {specifications[0]}, {specifications[-1]}"):
                 corner1, corner2, labels = result
                 labels[labels > 0] += max_label
                 max_label = np.amax([max_label, np.amax(labels)])
