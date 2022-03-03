@@ -197,7 +197,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and fragment image
         """
-        print(f"Processing @corner: {corner1} to {corner2}")
+        #print(f"Processing @corner: {corner1} to {corner2}")
         threshold = 0.9
 
         prob = zarr.open(self.prob_path, mode="r")
@@ -251,7 +251,7 @@ class state_generation:
 
         new_labels = image_process.rename_states_consecutively(new_labels)
 
-        print(f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components")
+        #print(f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components")
         return (corner1, corner2, new_labels)
 
     def compute_frags(self) -> None:
@@ -278,14 +278,13 @@ class state_generation:
             #     self._split_frags_thread(specification["corner1"],
             #         specification["corner2"],
             #         specification["soma_coords"],)
-            print(f"Processing block {i}: {specifications[0]}, {specifications[-1]}")
             results = Parallel(n_jobs=self.parallel)(
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
                     specification["corner2"],
                     specification["soma_coords"],
                 )
-                for specification in specifications
+                for specification in tqdm(specifications, desc=f"Processing block {i}: {specifications[0]}, {specifications[-1]}")
             )
 
             for result in tqdm(results, desc = f"Writing block {i}: {specifications[0]}, {specifications[-1]}"):
