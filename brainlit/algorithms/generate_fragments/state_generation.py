@@ -207,6 +207,8 @@ class state_generation:
         ]
         labels = measure.label(im_processed > threshold)
 
+        print("Labelled")
+
         radius_states = 7
 
         (
@@ -218,9 +220,13 @@ class state_generation:
             soma_coords, labels, im_processed, res=self.resolution, verbose=False
         )
 
+        print("somas removed")
+
         mask = labels > 0
         mask2 = image_process.removeSmallCCs(mask, 25, verbose=False)
         image_iterative[mask & (~mask2)] = 0
+
+        print("removed small ccs")
 
         states, comp_to_states = image_process.split_frags_place_points(
             image_iterative=image_iterative,
@@ -233,14 +239,19 @@ class state_generation:
             verbose=False,
         )
 
+        print("placed points")
+
 
         new_labels = image_process.split_frags_split_comps(
             labels, new_soma_masks, states, comp_to_states, verbose=False
         )
 
+        print("split frags")
+
         new_labels = image_process.split_frags_split_fractured_components(
             new_labels, verbose=False
         )
+        print("split fractures")
 
         props = measure.regionprops(new_labels)
         for _, prop in enumerate(
@@ -248,6 +259,7 @@ class state_generation:
         ):
             if prop.area < 15:
                 new_labels[new_labels == prop.label] = 0
+        print("remove small ccs")
 
         new_labels = image_process.rename_states_consecutively(new_labels)
 
