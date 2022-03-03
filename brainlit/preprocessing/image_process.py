@@ -461,20 +461,17 @@ def split_frags_place_points(
         list: coordinates of the points
         dictionary: map from component in labels, to set of points that were placed there
     """
-    print("a")
     top_ind = np.unravel_index(
         np.argmax(image_iterative, axis=None), image_iterative.shape
     )
     top = image_iterative[top_ind[0], top_ind[1], top_ind[2]]
-    print("b")
 
     radius_vox = np.divide(radius_states, res).astype(int)
-    print("c")
 
     prev_tot = np.sum(image_iterative > threshold)
-    print("d")
 
     with tqdm(total=prev_tot, desc="Adding points...", disable=not verbose) as pbar:
+        print(f"{top}")
         while top > threshold:
             states.append(top_ind)
 
