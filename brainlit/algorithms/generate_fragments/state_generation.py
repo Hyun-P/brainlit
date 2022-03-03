@@ -660,7 +660,7 @@ class state_generation:
                 specification["corner1"],
                 specification["corner2"],
             )
-            for specification in enumerate(specifications, desc="Computing states")
+            for specification in tqdm(specifications, desc="Computing states")
         )
         results = [item for result in results_tuple for item in result]
 
