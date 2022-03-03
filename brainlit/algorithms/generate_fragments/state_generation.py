@@ -149,7 +149,7 @@ class state_generation:
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
 
-        num_chunks_per_block = self.parallel*2 #int(10**9 / np.prod(chunk_size))
+        num_chunks_per_block = int(10 ** 9 / np.prod(chunk_size))
 
         specifications = []
 
@@ -185,7 +185,11 @@ class state_generation:
         return specifications
 
     def _split_frags_thread(
-        self, corner1: List[int], corner2: List[int], data_bin: str, soma_coords: List[list] = []
+        self,
+        corner1: List[int],
+        corner2: List[int],
+        data_bin: str,
+        soma_coords: List[list] = [],
     ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute fragments of image chunk
 
@@ -207,8 +211,6 @@ class state_generation:
         ]
         labels = measure.label(im_processed > threshold)
 
-        print("Labelled")
-
         radius_states = 7
 
         (
@@ -220,13 +222,9 @@ class state_generation:
             soma_coords, labels, im_processed, res=self.resolution, verbose=False
         )
 
-        print("somas removed")
-
         mask = labels > 0
         mask2 = image_process.removeSmallCCs(mask, 25, verbose=False)
         image_iterative[mask & (~mask2)] = 0
-
-        print("removed small ccs")
 
         states, comp_to_states = image_process.split_frags_place_points(
             image_iterative=image_iterative,
@@ -239,16 +237,12 @@ class state_generation:
             verbose=False,
         )
 
-        print("placed points")
-
-
         new_labels = image_process.split_frags_split_comps(
-            labels, new_soma_masks, states, comp_to_states, verbose=True
+            labels, new_soma_masks, states, comp_to_states, verbose=False
         )
 
-
         new_labels = image_process.split_frags_split_fractured_components(
-            new_labels, verbose=True
+            new_labels, verbose=False
         )
 
         props = measure.regionprops(new_labels)
@@ -257,14 +251,15 @@ class state_generation:
         ):
             if prop.area < 15:
                 new_labels[new_labels == prop.label] = 0
-        print("remove small ccs")
 
         new_labels = image_process.rename_states_consecutively(new_labels)
 
-        print(f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components")
-        fname = data_bin + f"{corner1[0]}_{corner1[1]}_{corner1[2]}-{corner2[0]}_{corner2[1]}_{corner2[2]}" + ".npy"
-        np.save(fname, new_labels)
-        #return (corner1, corner2, new_labels)
+        print(
+            f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components"
+        )
+        # fname = data_bin + f"{corner1[0]}_{corner1[1]}_{corner1[2]}-{corner2[0]}_{corner2[1]}_{corner2[2]}" + ".npy"
+        # np.save(fname, new_labels)
+        return (corner1, corner2, new_labels)
 
     def compute_frags(self, data_bin: str) -> None:
         """Compute all fragments for image"""
@@ -282,29 +277,35 @@ class state_generation:
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
-        specifications = self._get_frag_specifications()
+        specification_blocks = self._get_frag_specifications()
 
         max_label = 0
-        #for i, specifications in enumerate(specification_blocks):
-        Parallel(n_jobs=self.parallel)(
-            delayed(self._split_frags_thread)(
-                specification["corner1"],
-                specification["corner2"],
-                data_bin,
-                specification["soma_coords"],
+        for i, specifications in enumerate(specification_blocks):
+            results = Parallel(n_jobs=self.parallel)(
+                delayed(self._split_frags_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                    data_bin,
+                    specification["soma_coords"],
+                )
+                for specification in tqdm(
+                    specifications,
+                    desc=f"Computing labels {i}: {specifications[0]}, {specifications[-1]}",
+                )
             )
-            for specification in tqdm(specifications, desc=f"Writing labels", disable=True)
-        )
 
-            # for result in tqdm(results, desc = f"Writing block {i}: {specifications[0]}, {specifications[-1]}"):
-            #     corner1, corner2, labels = result
-            #     labels[labels > 0] += max_label
-            #     max_label = np.amax([max_label, np.amax(labels)])
-            #     fragments[
-            #         corner1[0] : corner2[0],
-            #         corner1[1] : corner2[1],
-            #         corner1[2] : corner2[2],
-            #     ] = labels
+            for result in tqdm(
+                results,
+                desc=f"Writing block {i}: {specifications[0]}, {specifications[-1]}",
+            ):
+                corner1, corner2, labels = result
+                labels[labels > 0] += max_label
+                max_label = np.amax([max_label, np.amax(labels)])
+                fragments[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = labels
         print(f"*****************Number of components: {max_label}*******************")
 
         self.fragment_path = frag_fname
@@ -392,7 +393,6 @@ class state_generation:
             for specification in specifications
         )
 
-
         for result in results:
             corner1, corner2, image_tiered = result
             tiered[
@@ -445,7 +445,7 @@ class state_generation:
         res = self.resolution
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
-        max_length = np.sqrt(np.sum([dim**2 for dim in dims]))
+        max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
 
         r = 15
         if max_length < r:

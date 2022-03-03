@@ -473,7 +473,6 @@ def split_frags_place_points(
 
     with tqdm(total=prev_tot, desc="Adding points...", disable=not verbose) as pbar:
         while top > threshold:
-            print(f"{top}")
             states.append(top_ind)
 
             comp = labels[top_ind[0], top_ind[1], top_ind[2]]

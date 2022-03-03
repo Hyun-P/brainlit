@@ -62,7 +62,6 @@ def viterbrain():
     # )
 
     sg._split_frags_thread([0, 8000, 4500], [5, 8500, 5000], data_bin="/data/tathey1/bil/files_bay/")
-    raise ValueError()
     sg.compute_frags(data_bin="/data/tathey1/bil/files_bay/")
     sg.compute_soma_lbls()
     sg.compute_image_tiered()
