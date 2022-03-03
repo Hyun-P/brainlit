@@ -493,6 +493,7 @@ def split_frags_place_points(
                 np.amin([image_iterative.shape[1], top_ind[1] + radius_vox[1]]),
                 np.amin([image_iterative.shape[2], top_ind[2] + radius_vox[2]]),
             ]
+            print(f"{l_bd} to {u_bd}")
             image_iterative[l_bd[0] : u_bd[0], l_bd[1] : u_bd[1], l_bd[2] : u_bd[2]] = 0
 
             top_ind = np.unravel_index(
