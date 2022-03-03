@@ -367,13 +367,17 @@ class state_generation:
         fragments = zarr.open(self.fragment_path, mode="r")
 
         for iter in tqdm(range(100), disable=not verbose):
+            print(f"iter: {iter} len: {len(data_fg)}")
             if len(data_fg) > 10000:
                 break
             center = [np.random.randint(0, image.shape[i]) for i in range(3)]
             c1 = [np.amax([0, i-150]) for i in center]
             c2 = [np.amin([i, j+150]) for i,j in zip(image.shape, center)]
             im = image[c1[0]:c2[0], c1[1]:c2[1], c1[2]:c2[2]]
-            data_fg += list(im)
+            frag = fragments[c1[0]:c2[0], c1[1]:c2[1], c1[2]:c2[2]]
+            fg_samples = im[frag > 0]
+
+            data_fg += list(fg_samples)
 
         if len(data_fg) <= 10000:
             raise ValueError("Not enough positive samples")
@@ -400,7 +404,7 @@ class state_generation:
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        data_sample = self._get_fg_sample()
+        data_sample = self._get_fg_sample(verbose=False)
 
         kde = gaussian_kde(data_sample)
 
