@@ -185,7 +185,7 @@ class state_generation:
         return specifications
 
     def _split_frags_thread(
-        self, corner1: List[int], corner2: List[int], soma_coords: List[list] = [], data_bin: str
+        self, corner1: List[int], corner2: List[int], data_bin: str, soma_coords: List[list] = []
     ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute fragments of image chunk
 
