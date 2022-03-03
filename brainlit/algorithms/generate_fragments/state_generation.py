@@ -201,7 +201,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and fragment image
         """
-        print(f"Processing @corner: {corner1} to {corner2}")
+        # print(f"Processing @corner: {corner1} to {corner2}")
         threshold = 0.9
 
         prob = zarr.open(self.prob_path, mode="r")
@@ -254,9 +254,9 @@ class state_generation:
 
         new_labels = image_process.rename_states_consecutively(new_labels)
 
-        print(
-            f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components"
-        )
+        # print(
+        #     f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components"
+        # )
         # fname = data_bin + f"{corner1[0]}_{corner1[1]}_{corner1[2]}-{corner2[0]}_{corner2[1]}_{corner2[2]}" + ".npy"
         # np.save(fname, new_labels)
         return (corner1, corner2, new_labels)
@@ -291,6 +291,7 @@ class state_generation:
                 for specification in tqdm(
                     specifications,
                     desc=f"Computing labels {i}: {specifications[0]}, {specifications[-1]}",
+                    disable = False
                 )
             )
 
