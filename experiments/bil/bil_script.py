@@ -52,7 +52,7 @@ def viterbrain():
         chunk_size=[5,500,500],
         soma_coords=[],
         resolution = [100, 0.35, 0.35],
-        parallel=16,
+        parallel=24,
         prob_path="/data/tathey1/bil/image_probs.zarr",
         fragment_path="/data/tathey1/bil/image_labels.zarr"
     )

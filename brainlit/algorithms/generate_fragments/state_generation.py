@@ -342,7 +342,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and tiered image
         """
-        print(f"Processing @corner: {corner1}-{corner2}")
+        #print(f"Processing @corner: {corner1}-{corner2}")
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
