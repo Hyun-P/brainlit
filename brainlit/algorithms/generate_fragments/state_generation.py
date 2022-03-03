@@ -243,15 +243,13 @@ class state_generation:
 
 
         new_labels = image_process.split_frags_split_comps(
-            labels, new_soma_masks, states, comp_to_states, verbose=False
+            labels, new_soma_masks, states, comp_to_states, verbose=True
         )
 
-        print("split frags")
 
         new_labels = image_process.split_frags_split_fractured_components(
-            new_labels, verbose=False
+            new_labels, verbose=True
         )
-        print("split fractures")
 
         props = measure.regionprops(new_labels)
         for _, prop in enumerate(
