@@ -369,7 +369,7 @@ class state_generation:
         for iter in range(100):
             if len(data_fg) > 10000:
                 break
-            center = [np.random.randint(0, image.size[i]) for i in range(3)]
+            center = [np.random.randint(0, image.shape[i]) for i in range(3)]
             c1 = [np.amax([0, i-150]) for i in center]
             c2 = [np.amin([i, j+150]) for i,j in zip(image.shape, center)]
             im = image[c1[0]:c2[0], c1[1]:c2[1], c1[2]:c2[2]]
