@@ -280,7 +280,7 @@ class state_generation:
         specification_blocks = self._get_frag_specifications()
 
         max_label = 0
-        for i, specifications in enumerate(specification_blocks):
+        for i, specifications in enumerate(tqdm(specification_blocks, desc="Making labels")):
             results = Parallel(n_jobs=self.parallel)(
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
@@ -291,13 +291,15 @@ class state_generation:
                 for specification in tqdm(
                     specifications,
                     desc=f"Computing labels {i}: {specifications[0]}, {specifications[-1]}",
-                    disable = False
+                    disable = False,
+                    leave = False
                 )
             )
 
             for result in tqdm(
                 results,
                 desc=f"Writing block {i}: {specifications[0]}, {specifications[-1]}",
+                leave = False
             ):
                 corner1, corner2, labels = result
                 labels[labels > 0] += max_label
