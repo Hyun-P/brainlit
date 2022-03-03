@@ -55,7 +55,8 @@ def viterbrain():
         parallel=24,
         prob_path="/data/tathey1/bil/image_probs.zarr",
         fragment_path="/data/tathey1/bil/image_labels.zarr",
-        tiered_path="/data/tathey1/bil/image_tiered.zarr"
+        tiered_path="/data/tathey1/bil/image_tiered.zarr",
+        states_path ="/data/tathey1/bil/image_nx.pickle"
     )
 
     # sg.predict(
@@ -64,9 +65,9 @@ def viterbrain():
     # )
 
     #sg.compute_frags()
-    sg.compute_soma_lbls()
+    #sg.compute_soma_lbls()
     # sg.compute_image_tiered()
-    sg.compute_states()
+    #sg.compute_states()
     sg.compute_edge_weights()
 
 
