@@ -54,7 +54,8 @@ def viterbrain():
         resolution = [100, 0.35, 0.35],
         parallel=24,
         prob_path="/data/tathey1/bil/image_probs.zarr",
-        fragment_path="/data/tathey1/bil/image_labels.zarr"
+        fragment_path="/data/tathey1/bil/image_labels.zarr",
+        fragment_path="/data/tathey1/bil/image_tiered.zarr"
     )
 
     # sg.predict(
