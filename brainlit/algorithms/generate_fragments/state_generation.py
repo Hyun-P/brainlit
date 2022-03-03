@@ -361,12 +361,12 @@ class state_generation:
 
         return (corner1, corner2, image_tiered)
 
-    def _get_fg_sample(self):
+    def _get_fg_sample(self, verbose=True):
         data_fg = []
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
 
-        for iter in range(100):
+        for iter in tqdm(range(100), disable=not verbose):
             if len(data_fg) > 10000:
                 break
             center = [np.random.randint(0, image.shape[i]) for i in range(3)]
@@ -388,11 +388,16 @@ class state_generation:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
-        tiered = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
-        )
         items = self.image_path.split(".")
         tiered_fname = items[0] + "_tiered.zarr"
+        tiered = zarr.open(
+            tiered_fname,
+            mode="w",
+            shape=np.squeeze(image.shape),
+            chunks=image.chunks,
+            dtype="uint16",
+        )
+
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
         data_sample = self._get_fg_sample()
@@ -401,25 +406,26 @@ class state_generation:
 
         self.kde = kde
 
-        specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel)(
-            delayed(self._compute_image_tiered_thread)(
-                specification["corner1"],
-                specification["corner2"],
+        specification_blocks = self._get_frag_specifications()
+
+        for i, specifications in enumerate(tqdm(specification_blocks, desc="Making labels")):
+            results = Parallel(n_jobs=self.parallel)(
+                delayed(self._compute_image_tiered_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                )
+                for specification in tqdm(specifications, desc="Computing tiered image", leave=False)
             )
-            for specification in specifications
-        )
 
-        for result in results:
-            corner1, corner2, image_tiered = result
-            tiered[
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ] = image_tiered
+            for result in tqdm(results, desc="Writing tiered image", leave=False):
+                corner1, corner2, image_tiered = result
+                tiered[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = image_tiered
 
-        zarr.save(tiered_fname, tiered)
         self.tiered_path = tiered_fname
 
     def _compute_bounds(
