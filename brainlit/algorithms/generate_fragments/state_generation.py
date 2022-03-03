@@ -251,6 +251,7 @@ class state_generation:
 
         new_labels = image_process.rename_states_consecutively(new_labels)
 
+        print(f"Processed @corner: {corner1} to {corner2} with {len(props)} components")
         return (corner1, corner2, new_labels)
 
     def compute_frags(self) -> None:
