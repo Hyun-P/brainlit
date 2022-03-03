@@ -149,7 +149,7 @@ class state_generation:
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
 
-        num_chunks_per_block = int(10**9 / 10 / np.prod(chunk_size))
+        num_chunks_per_block = self.parallel*2 #int(10**9 / np.prod(chunk_size))
 
         specifications = []
 
@@ -251,7 +251,7 @@ class state_generation:
 
         new_labels = image_process.rename_states_consecutively(new_labels)
 
-        print(f"Processed @corner: {corner1} to {corner2} with {len(props)} components")
+        print(f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components")
         return (corner1, corner2, new_labels)
 
     def compute_frags(self) -> None:
