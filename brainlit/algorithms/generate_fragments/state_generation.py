@@ -149,7 +149,7 @@ class state_generation:
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
 
-        num_chunks_per_block = int(10**9 / np.prod(chunk_size))
+        num_chunks_per_block = int(10**9 / 10 / np.prod(chunk_size))
 
         specifications = []
 
@@ -273,29 +273,30 @@ class state_generation:
 
         max_label = 0
         for i, specifications in enumerate(specification_blocks):
-            for specification in specifications:
-                self._split_frags_thread(specification["corner1"],
-                    specification["corner2"],
-                    specification["soma_coords"],)
-            # print(f"Block {i}: {specifications[0]}, {specifications[-1]}")
-            # results = Parallel(n_jobs=self.parallel)(
-            #     delayed(self._split_frags_thread)(
-            #         specification["corner1"],
+            # for specification in specifications:
+            #     self._split_frags_thread(specification["corner1"],
             #         specification["corner2"],
-            #         specification["soma_coords"],
-            #     )
-            #     for specification in specifications
-            # )
+            #         specification["soma_coords"],)
+            print(f"Processing block {i}: {specifications[0]}, {specifications[-1]}")
+            results = Parallel(n_jobs=self.parallel)(
+                delayed(self._split_frags_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                    specification["soma_coords"],
+                )
+                for specification in specifications
+            )
+            print(f"Writing block {i}: {specifications[0]}, {specifications[-1]}")
 
-            # for result in results:
-            #     corner1, corner2, labels = result
-            #     labels[labels > 0] += max_label
-            #     max_label = np.amax([max_label, np.amax(labels)])
-            #     fragments[
-            #         corner1[0] : corner2[0],
-            #         corner1[1] : corner2[1],
-            #         corner1[2] : corner2[2],
-            #     ] = labels
+            for result in results:
+                corner1, corner2, labels = result
+                labels[labels > 0] += max_label
+                max_label = np.amax([max_label, np.amax(labels)])
+                fragments[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = labels
         print(f"*****************Number of components: {max_label}*******************")
 
         self.fragment_path = frag_fname
