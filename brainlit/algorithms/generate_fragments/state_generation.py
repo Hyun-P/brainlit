@@ -177,15 +177,15 @@ class state_generation:
                             "soma_coords": soma_coords_new,
                         }
                     )
-        specifications = [
-            specifications[x : x + num_chunks_per_block]
-            for x in range(0, len(specifications), num_chunks_per_block)
-        ]
+        # specifications = [
+        #     specifications[x : x + num_chunks_per_block]
+        #     for x in range(0, len(specifications), num_chunks_per_block)
+        # ]
 
         return specifications
 
     def _split_frags_thread(
-        self, corner1: List[int], corner2: List[int], soma_coords: List[list] = []
+        self, corner1: List[int], corner2: List[int], soma_coords: List[list] = [], data_bin: str
     ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute fragments of image chunk
 
@@ -252,9 +252,11 @@ class state_generation:
         new_labels = image_process.rename_states_consecutively(new_labels)
 
         #print(f"Processed @corner: {corner1} to {corner2} with: \t {len(props)} components")
-        return (corner1, corner2, new_labels)
+        fname = f"{corner1[0]}_{corner1[1]}_{corner1[2]}-{corner2[0]}_{corner2[1]}_{corner2[2]}"
+        np.save(fname, new_labels)
+        #return (corner1, corner2, new_labels)
 
-    def compute_frags(self) -> None:
+    def compute_frags(self, data_bin: str) -> None:
         """Compute all fragments for image"""
         image = zarr.open(self.image_path, mode="r")
         items = self.image_path.split(".")
@@ -270,32 +272,29 @@ class state_generation:
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
-        specification_blocks = self._get_frag_specifications()
+        specifications = self._get_frag_specifications()
 
         max_label = 0
-        for i, specifications in enumerate(specification_blocks):
-            # for specification in specifications:
-            #     self._split_frags_thread(specification["corner1"],
-            #         specification["corner2"],
-            #         specification["soma_coords"],)
-            results = Parallel(n_jobs=self.parallel)(
-                delayed(self._split_frags_thread)(
-                    specification["corner1"],
-                    specification["corner2"],
-                    specification["soma_coords"],
-                )
-                for specification in tqdm(specifications, desc=f"Processing block {i}: {specifications[0]}, {specifications[-1]}")
+        #for i, specifications in enumerate(specification_blocks):
+        Parallel(n_jobs=self.parallel)(
+            delayed(self._split_frags_thread)(
+                specification["corner1"],
+                specification["corner2"],
+                specification["soma_coords"],
+                data_bin
             )
+            for specification in tqdm(specifications, desc=f"Writing labels")
+        )
 
-            for result in tqdm(results, desc = f"Writing block {i}: {specifications[0]}, {specifications[-1]}"):
-                corner1, corner2, labels = result
-                labels[labels > 0] += max_label
-                max_label = np.amax([max_label, np.amax(labels)])
-                fragments[
-                    corner1[0] : corner2[0],
-                    corner1[1] : corner2[1],
-                    corner1[2] : corner2[2],
-                ] = labels
+            # for result in tqdm(results, desc = f"Writing block {i}: {specifications[0]}, {specifications[-1]}"):
+            #     corner1, corner2, labels = result
+            #     labels[labels > 0] += max_label
+            #     max_label = np.amax([max_label, np.amax(labels)])
+            #     fragments[
+            #         corner1[0] : corner2[0],
+            #         corner1[1] : corner2[1],
+            #         corner1[2] : corner2[2],
+            #     ] = labels
         print(f"*****************Number of components: {max_label}*******************")
 
         self.fragment_path = frag_fname
