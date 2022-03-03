@@ -280,8 +280,8 @@ class state_generation:
             delayed(self._split_frags_thread)(
                 specification["corner1"],
                 specification["corner2"],
+                data_bin,
                 specification["soma_coords"],
-                data_bin
             )
             for specification in tqdm(specifications, desc=f"Writing labels")
         )
@@ -381,6 +381,7 @@ class state_generation:
             )
             for specification in specifications
         )
+
 
         for result in results:
             corner1, corner2, image_tiered = result
