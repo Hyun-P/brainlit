@@ -660,14 +660,14 @@ class state_generation:
                 specification["corner1"],
                 specification["corner2"],
             )
-            for specification in specifications
+            for specification in enumerate(specifications, desc="Computing states")
         )
         results = [item for result in results_tuple for item in result]
 
         state_num = 0
         G = nx.DiGraph()
         soma_comp2state = {}
-        for result in results:
+        for result in tqdm(results, desc="Writing states"):
             component, a, b, oa, ob, sum = result
             if component in self.soma_lbls:
                 if b is not None:
