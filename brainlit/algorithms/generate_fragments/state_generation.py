@@ -177,10 +177,10 @@ class state_generation:
                             "soma_coords": soma_coords_new,
                         }
                     )
-        # specifications = [
-        #     specifications[x : x + num_chunks_per_block]
-        #     for x in range(0, len(specifications), num_chunks_per_block)
-        # ]
+        specifications = [
+            specifications[x : x + num_chunks_per_block]
+            for x in range(0, len(specifications), num_chunks_per_block)
+        ]
 
         return specifications
 
