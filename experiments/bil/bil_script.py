@@ -53,7 +53,7 @@ def viterbrain():
         soma_coords=[],
         resolution = [100, 0.35, 0.35],
         parallel=24,
-        #prob_path="/data/tathey1/bil/image_probs.zarr"
+        prob_path="/data/tathey1/bil/image_probs.zarr"
     )
 
     # sg.predict(
