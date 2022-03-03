@@ -653,6 +653,7 @@ class state_generation:
         states_fname = items[0] + "_nx.pickle"
 
         specifications = self._get_frag_specifications()
+        specifications = [item for sublist in specifications for item in sublist]
 
         results_tuple = Parallel(n_jobs=self.parallel)(
             delayed(self._compute_states_thread)(

@@ -64,7 +64,7 @@ def viterbrain():
 
     #sg.compute_frags()
     #sg.compute_soma_lbls()
-    sg.compute_image_tiered()
+    # sg.compute_image_tiered()
     sg.compute_states()
     sg.compute_edge_weights()
 
