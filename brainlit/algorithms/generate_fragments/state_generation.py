@@ -1,3 +1,4 @@
+from brainlit_parent.brainlit.brainlit.preprocessing.preprocess import center
 import zarr
 import numpy as np
 import h5py
@@ -361,6 +362,29 @@ class state_generation:
 
         return (corner1, corner2, image_tiered)
 
+    def _get_fg_sample(self):
+        data_fg = []
+        image = zarr.open(self.image_path, mode="r")
+        fragments = zarr.open(self.fragment_path, mode="r")
+
+        for iter in range(100):
+            if len(data_fg) > 10000:
+                break
+            center = [np.randint(0, image.size[i]) for i in range(3)]
+            c1 = [np.amax([0, i-150]) for i in center]
+            c2 = [np.amin([i, j+150]) for i,j in zip(image.shape, center)]
+            im = image[c1[0]:c2[0], c1[1]:c2[1], c1[2]:c2[2]]
+            data_fg += list(im)
+
+        if len(data_fg) <= 10000:
+            raise ValueError("Not enough positive samples")
+
+        data_sample = random.sample(list(data_fg), k=10000) 
+
+        return data_sample
+
+
+
     def compute_image_tiered(self) -> None:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
@@ -372,13 +396,7 @@ class state_generation:
         tiered_fname = items[0] + "_tiered.zarr"
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        image_chunk = image[:300, :300, :300]
-        fragments_chunk = fragments[:300, :300, :300]
-        data_fg = image_chunk[fragments_chunk > 0]
-        if len(data_fg.flatten()) > 10000:
-            data_sample = random.sample(list(data_fg), k=10000)
-        else:
-            data_sample = data_fg
+        data_sample = self._get_fg_sample()
 
         kde = gaussian_kde(data_sample)
 

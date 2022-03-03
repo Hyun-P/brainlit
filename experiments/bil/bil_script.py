@@ -53,7 +53,8 @@ def viterbrain():
         soma_coords=[],
         resolution = [100, 0.35, 0.35],
         parallel=16,
-        prob_path="/data/tathey1/bil/image_probs.zarr"
+        prob_path="/data/tathey1/bil/image_probs.zarr",
+        fragment_path="/data/tathey1/bil/image_labels.zarr"
     )
 
     # sg.predict(
@@ -61,8 +62,8 @@ def viterbrain():
     #     pos_class = 0
     # )
 
-    sg.compute_frags()
-    sg.compute_soma_lbls()
+    #sg.compute_frags()
+    #sg.compute_soma_lbls()
     sg.compute_image_tiered()
     sg.compute_states()
     sg.compute_edge_weights()
