@@ -101,12 +101,17 @@ class state_generation:
             pos_class (int): class label in ilastik output that represents foreground
         """
         image = zarr.open(self.image_path, mode="r")
-        probabilities = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="float"
-        )
         chunk_size = self.chunk_size
         items = self.image_path.split(".")
         prob_fname = items[0] + "_probs.zarr"
+
+        probabilities = zarr.open(
+            prob_fname, 
+            mode = "w",
+            shape = np.squeeze(image.shape),
+            chunks=image.chunks,
+            dtype="float"
+        )
 
         print(
             f"Constructing probability  image {prob_fname} of shape {probabilities.shape}"
@@ -146,7 +151,6 @@ class state_generation:
                         probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
 
-        zarr.save(prob_fname, probabilities)
         self.prob_path = prob_fname
 
     def _get_frag_specifications(self) -> list:
