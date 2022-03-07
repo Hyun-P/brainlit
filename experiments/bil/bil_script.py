@@ -9,6 +9,7 @@ from tqdm import tqdm
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 from skimage import measure
 from scipy import stats
+from joblib import Parallel, delayed
 
 PIL.Image.MAX_IMAGE_PIXELS = 1056323868
 
@@ -77,6 +78,7 @@ def viterbrain():
 labs = zarr.open("/data/tathey1/bil/image_labels.zarr")
 spacing = (1,10,10)
 func = stats.mode
+parallel = 8
 
 new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
 new_chunks = [int(np.amax([np.floor(chunk/space), 1])) for chunk,space in zip(labs.chunks, spacing)]
@@ -84,13 +86,61 @@ labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_siz
 print(f"Writing {labs_ds} with shape {labs_ds.shape}, chunks {labs_ds.chunks}, and dtype {labs_ds.dtype}")
 
 
-for ix,x1 in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
-    x2 = np.amin([labs.shape[0], x1 + spacing[0]])
-    for iy, y1 in enumerate(tqdm(range(0, labs.shape[1], spacing[1]), desc="y", leave=False)):
-        y2 = np.amin([labs.shape[1], y1 + spacing[1]])
-        for iz, z1 in enumerate(tqdm(range(0, labs.shape[2], spacing[2]),desc="z", leave=False)):
-            z2 = np.amin([labs.shape[2], z1 + spacing[2]])
-            im = labs[x1:x2,y1:y2,z1:z2]
-            val = func(im, axis=None)[0][0]
-            labs_ds[ix,iy,iz] = val
 
+def _get_frag_specifications(image, chunk_size):
+    num_chunks_per_block = 10 ** 9
+    specifications = []
+
+    for ix, x in enumerate(np.arange(0, image.shape[0], chunk_size[0])):
+        x2 = np.amin([x + chunk_size[0], image.shape[0]])
+        for iy, y in enumerate(np.arange(0, image.shape[1], chunk_size[1])):
+            y2 = np.amin([y + chunk_size[1], image.shape[1]])
+            for iz, z in enumerate(np.arange(0, image.shape[2], chunk_size[2])):
+                z2 = np.amin([z + chunk_size[2], image.shape[2]])
+
+                specifications.append(
+                    {
+                        "corner1": [x, y, z],
+                        "corner2": [x2, y2, z2],
+                        "idx": [ix, iy, iz]
+                        }
+                    )
+        specifications = [
+            specifications[x : x + num_chunks_per_block]
+            for x in range(0, len(specifications), num_chunks_per_block)
+        ]
+
+        return specifications
+
+def downsample_block(corner1, corner2, idx):
+    im = labs[corner1[0]:corner2[0],corner1[1]:corner2[1],corner1[2]:corner2[2]]
+    val = func(im, axis=None)[0][0]
+
+    return (val, idx)
+
+
+
+specification_blocks = _get_frag_specifications()
+
+for i, specifications in enumerate(tqdm(specification_blocks, desc="Downsampling")):
+    results = Parallel(n_jobs=parallel)(
+        delayed(downsample_block)(
+            specification["corner1"],
+            specification["corner2"],
+            specification["idx"],
+        )
+        for specification in tqdm(
+            specifications,
+            desc=f"Computing labels {i}: {specifications[0]}, {specifications[-1]}",
+            disable = False,
+            leave = False
+        )
+    )
+
+    for result in tqdm(
+        results,
+        desc=f"Writing block {i}: {specifications[0]}, {specifications[-1]}",
+        leave = False
+    ):
+        val, idx = result
+        labs_ds[idx[0], idx[1], idx[2]] = val
