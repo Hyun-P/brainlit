@@ -139,10 +139,10 @@ class state_generation:
                         if len(pred.shape) == 4:
                             pred = pred[:, :, :, pos_class]
                         elif len(pred.shape) == 3:
-                            pred = pred[:, :, pos_class]
+                            pred = np.reshape(pred[:, :, pos_class], (x2-x,y2-y,z2-z))
                         else:
                             raise ValueError("prediction has unexpected dimension")
-
+                        
                         probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
 
