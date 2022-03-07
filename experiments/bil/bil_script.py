@@ -81,6 +81,7 @@ func = stats.mode
 new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
 new_chunks = [np.floor(chunk/space) for chunk,space in zip(labs.chunks, spacing)]
 labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks, dtype="i4")
+print(f"Writing {labs_ds} with shape {labs_ds.shape}, chunks {labs_ds.chunks}, and dtype {labs_ds.dtype}")
 
 
 for x1,ix in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
