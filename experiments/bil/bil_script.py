@@ -88,10 +88,9 @@ for ix,x1 in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
     x2 = np.amin([labs.shape[0], x1 + spacing[0]])
     for iy, y1 in enumerate(tqdm(range(0, labs.shape[1], spacing[1]), desc="y", leave=False)):
         y2 = np.amin([labs.shape[1], y1 + spacing[1]])
-        for iz, z1 in enumerate(range(0, labs.shape[2], spacing[2])):
+        for iz, z1 in enumerate(tqdm(range(0, labs.shape[2], spacing[2]),desc="z", leave=False)):
             z2 = np.amin([labs.shape[2], z1 + spacing[2]])
             im = labs[x1:x2,y1:y2,z1:z2]
             val = func(im, axis=None)[0][0]
-            print(val)
             labs_ds[ix,iy,iz] = val
 
