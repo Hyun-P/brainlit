@@ -136,7 +136,12 @@ class state_generation:
                         z2 = np.amin([z + chunk_size[2], image.shape[2]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
-                        pred = pred[:, :, :, pos_class]
+                        if len(pred.shape) == 4:
+                            pred = pred[:, :, :, pos_class]
+                        elif len(pred.shape) == 3:
+                            pred = pred[:, :, pos_class]
+                        else:
+                            raise ValueError("prediction has unexpected dimension")
 
                         probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
