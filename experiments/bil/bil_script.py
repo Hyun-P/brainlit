@@ -79,7 +79,8 @@ spacing = (100,100,100)
 func = stats.mode
 
 new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
-labs_ds = np.zeros(new_size)
+new_chunks = [np.floow(chunk/space) for chunk,space in zip(labs.chunks, spacing)]
+labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks)
 
 
 for x1,ix in enumerate(range(0, labs.shape[0], spacing[0])):
