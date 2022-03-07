@@ -7,6 +7,9 @@ import PIL.Image
 import zarr
 from tqdm import tqdm
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
+from skimage import measure
+from scipy import stats
+
 PIL.Image.MAX_IMAGE_PIXELS = 1056323868
 
 
@@ -71,6 +74,21 @@ def viterbrain():
     sg.compute_edge_weights()
 
 
+labs = zarr.open("/data/tathey1/bil/image_labels.zarr")
+spacing = (100,100,100)
+func = stats.mode
+
+new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
+labs_ds = np.zeros(new_size)
 
 
-viterbrain()
+for x1,ix in enumerate(range(0, labs.shape[0], spacing[0])):
+    x2 = np.amin([labs.shape[0], x1 + spacing[0]])
+    for y1, iy in enumerate(range(0, labs.shape[1], spacing[1])):
+        y2 = np.amin([labs.shape[1], y1 + spacing[1]])
+        for z1, iz in enumerate(range(0, labs.shape[2], spacing[2])):
+            z2 = np.amin([labs.shape[2], z1 + spacing[2]])
+            im = labs[x1:x2,y1:y2,z1:z2]
+            val = func(im)
+            labs_ds[ix,iy,iz] = val
+
