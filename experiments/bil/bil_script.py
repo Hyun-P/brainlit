@@ -52,95 +52,99 @@ def viterbrain():
     sg = state_generation(
         image_path="/data/tathey1/bil/image.zarr",
         ilastik_program_path="/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
-        ilastik_project_path="/data/tathey1/bil/ilastik/bil_slice.ilp",
-        chunk_size=[5,500,500],
+        ilastik_project_path="/data/tathey1/bil/ilastik_2d/bil_slice_2d.ilp",
+        chunk_size=[1,500,500],
         soma_coords=[],
         resolution = [100, 0.35, 0.35],
-        parallel=24,
-        prob_path="/data/tathey1/bil/image_probs.zarr",
-        fragment_path="/data/tathey1/bil/image_labels.zarr",
-        tiered_path="/data/tathey1/bil/image_tiered.zarr",
-        states_path ="/data/tathey1/bil/image_nx.pickle"
+        # parallel=24,
+        # prob_path="/data/tathey1/bil/image_probs.zarr",
+        # fragment_path="/data/tathey1/bil/image_labels.zarr",
+        # tiered_path="/data/tathey1/bil/image_tiered.zarr",
+        # states_path ="/data/tathey1/bil/image_nx.pickle"
     )
 
-    # sg.predict(
-    #     data_bin="/data/tathey1/bil/files_bay/",
-    #     pos_class = 0
-    # )
+    sg.predict(
+        data_bin="/data/tathey1/bil/files_bay/",
+        pos_class = 0
+    )
 
-    #sg.compute_frags()
-    #sg.compute_soma_lbls()
-    # sg.compute_image_tiered()
-    #sg.compute_states()
+    sg.compute_frags()
+    sg.compute_soma_lbls()
+    sg.compute_image_tiered()
+    sg.compute_states()
     sg.compute_edge_weights()
 
+viterbrain()
 
-labs = zarr.open("/data/tathey1/bil/image_labels.zarr")
-spacing = (1,10,10)
-func = stats.mode
-parallel = 8
-
-new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
-new_chunks = [int(np.amax([np.floor(chunk/space), 1])) for chunk,space in zip(labs.chunks, spacing)]
-labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks, dtype="i4")
-print(f"Writing {labs_ds} with shape {labs_ds.shape}, chunks {labs_ds.chunks}, and dtype {labs_ds.dtype}")
+# Downsample
 
 
+# labs = zarr.open("/data/tathey1/bil/image_labels.zarr")
+# spacing = (1,10,10)
+# func = stats.mode
+# parallel = 8
 
-def _get_frag_specifications(image, chunk_size):
-    num_chunks_per_block = 10 ** 9
-    specifications = []
-
-    for ix, x in enumerate(np.arange(0, image.shape[0], chunk_size[0])):
-        x2 = np.amin([x + chunk_size[0], image.shape[0]])
-        for iy, y in enumerate(np.arange(0, image.shape[1], chunk_size[1])):
-            y2 = np.amin([y + chunk_size[1], image.shape[1]])
-            for iz, z in enumerate(np.arange(0, image.shape[2], chunk_size[2])):
-                z2 = np.amin([z + chunk_size[2], image.shape[2]])
-
-                specifications.append(
-                    {
-                        "corner1": [x, y, z],
-                        "corner2": [x2, y2, z2],
-                        "idx": [ix, iy, iz]
-                        }
-                    )
-        specifications = [
-            specifications[x : x + num_chunks_per_block]
-            for x in range(0, len(specifications), num_chunks_per_block)
-        ]
-
-        return specifications
-
-def downsample_block(corner1, corner2, idx):
-    im = labs[corner1[0]:corner2[0],corner1[1]:corner2[1],corner1[2]:corner2[2]]
-    val = func(im, axis=None)[0][0]
-
-    return (val, idx)
+# new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
+# new_chunks = [int(np.amax([np.floor(chunk/space), 1])) for chunk,space in zip(labs.chunks, spacing)]
+# labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks, dtype="i4")
+# print(f"Writing {labs_ds} with shape {labs_ds.shape}, chunks {labs_ds.chunks}, and dtype {labs_ds.dtype}")
 
 
 
-specification_blocks = _get_frag_specifications(labs, spacing)
+# def _get_frag_specifications(image, chunk_size):
+#     num_chunks_per_block = 10 ** 9
+#     specifications = []
 
-for i, specifications in enumerate(tqdm(specification_blocks, desc="Downsampling")):
-    results = Parallel(n_jobs=parallel)(
-        delayed(downsample_block)(
-            specification["corner1"],
-            specification["corner2"],
-            specification["idx"],
-        )
-        for specification in tqdm(
-            specifications,
-            desc=f"Computing labels {i}: {specifications[0]}, {specifications[-1]}",
-            disable = False,
-            leave = False
-        )
-    )
+#     for ix, x in enumerate(np.arange(0, image.shape[0], chunk_size[0])):
+#         x2 = np.amin([x + chunk_size[0], image.shape[0]])
+#         for iy, y in enumerate(np.arange(0, image.shape[1], chunk_size[1])):
+#             y2 = np.amin([y + chunk_size[1], image.shape[1]])
+#             for iz, z in enumerate(np.arange(0, image.shape[2], chunk_size[2])):
+#                 z2 = np.amin([z + chunk_size[2], image.shape[2]])
 
-    for result in tqdm(
-        results,
-        desc=f"Writing block {i}: {specifications[0]}, {specifications[-1]}",
-        leave = False
-    ):
-        val, idx = result
-        labs_ds[idx[0], idx[1], idx[2]] = val
+#                 specifications.append(
+#                     {
+#                         "corner1": [x, y, z],
+#                         "corner2": [x2, y2, z2],
+#                         "idx": [ix, iy, iz]
+#                         }
+#                     )
+#         specifications = [
+#             specifications[x : x + num_chunks_per_block]
+#             for x in range(0, len(specifications), num_chunks_per_block)
+#         ]
+
+#         return specifications
+
+# def downsample_block(corner1, corner2, idx):
+#     im = labs[corner1[0]:corner2[0],corner1[1]:corner2[1],corner1[2]:corner2[2]]
+#     val = func(im, axis=None)[0][0]
+
+#     return (val, idx)
+
+
+
+# specification_blocks = _get_frag_specifications(labs, spacing)
+
+# for i, specifications in enumerate(tqdm(specification_blocks, desc="Downsampling")):
+#     results = Parallel(n_jobs=parallel)(
+#         delayed(downsample_block)(
+#             specification["corner1"],
+#             specification["corner2"],
+#             specification["idx"],
+#         )
+#         for specification in tqdm(
+#             specifications,
+#             desc=f"Computing labels {i}: {specifications[0]}, {specifications[-1]}",
+#             disable = False,
+#             leave = False
+#         )
+#     )
+
+#     for result in tqdm(
+#         results,
+#         desc=f"Writing block {i}: {specifications[0]}, {specifications[-1]}",
+#         leave = False
+#     ):
+#         val, idx = result
+#         labs_ds[idx[0], idx[1], idx[2]] = val
