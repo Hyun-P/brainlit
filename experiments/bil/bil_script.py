@@ -84,11 +84,11 @@ labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_siz
 print(f"Writing {labs_ds} with shape {labs_ds.shape}, chunks {labs_ds.chunks}, and dtype {labs_ds.dtype}")
 
 
-for x1,ix in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
+for ix,x1 in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
     x2 = np.amin([labs.shape[0], x1 + spacing[0]])
-    for y1, iy in enumerate(tqdm(range(0, labs.shape[1], spacing[1]), desc="y", leave=False)):
+    for iy, y1 in enumerate(tqdm(range(0, labs.shape[1], spacing[1]), desc="y", leave=False)):
         y2 = np.amin([labs.shape[1], y1 + spacing[1]])
-        for z1, iz in enumerate(range(0, labs.shape[2], spacing[2])):
+        for iz, z1 in enumerate(range(0, labs.shape[2], spacing[2])):
             z2 = np.amin([labs.shape[2], z1 + spacing[2]])
             im = labs[x1:x2,y1:y2,z1:z2]
             val = func(im, axis=None)[0][0]
