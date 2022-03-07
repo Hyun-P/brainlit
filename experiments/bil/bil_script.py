@@ -83,9 +83,9 @@ new_chunks = [np.floow(chunk/space) for chunk,space in zip(labs.chunks, spacing)
 labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks)
 
 
-for x1,ix in enumerate(range(0, labs.shape[0], spacing[0])):
+for x1,ix in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
     x2 = np.amin([labs.shape[0], x1 + spacing[0]])
-    for y1, iy in enumerate(range(0, labs.shape[1], spacing[1])):
+    for y1, iy in enumerate(tqdm(range(0, labs.shape[1], spacing[1]), desc="y", leave=False)):
         y2 = np.amin([labs.shape[1], y1 + spacing[1]])
         for z1, iz in enumerate(range(0, labs.shape[2], spacing[2])):
             z2 = np.amin([labs.shape[2], z1 + spacing[2]])
