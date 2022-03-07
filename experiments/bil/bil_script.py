@@ -80,7 +80,7 @@ func = stats.mode
 
 new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
 new_chunks = [np.floor(chunk/space) for chunk,space in zip(labs.chunks, spacing)]
-labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks)
+labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks, dtype="i4")
 
 
 for x1,ix in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
@@ -91,5 +91,6 @@ for x1,ix in enumerate(tqdm(range(0, labs.shape[0], spacing[0]), desc="x")):
             z2 = np.amin([labs.shape[2], z1 + spacing[2]])
             im = labs[x1:x2,y1:y2,z1:z2]
             val = func(im)
+            print(val)
             labs_ds[ix,iy,iz] = val
 
