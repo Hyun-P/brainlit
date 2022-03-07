@@ -79,7 +79,7 @@ spacing = (100,100,100)
 func = stats.mode
 
 new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
-new_chunks = [np.amax([np.floor(chunk/space), 1]) for chunk,space in zip(labs.chunks, spacing)]
+new_chunks = [int(np.amax([np.floor(chunk/space), 1])) for chunk,space in zip(labs.chunks, spacing)]
 labs_ds = zarr.open("/data/tathey1/bil/image_labels_ds.zarr", "w", shape=new_size, chunks=new_chunks, dtype="i4")
 print(f"Writing {labs_ds} with shape {labs_ds.shape}, chunks {labs_ds.chunks}, and dtype {labs_ds.dtype}")
 
