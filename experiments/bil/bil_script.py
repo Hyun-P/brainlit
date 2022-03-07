@@ -120,7 +120,7 @@ def downsample_block(corner1, corner2, idx):
 
 
 
-specification_blocks = _get_frag_specifications()
+specification_blocks = _get_frag_specifications(labs, spacing)
 
 for i, specifications in enumerate(tqdm(specification_blocks, desc="Downsampling")):
     results = Parallel(n_jobs=parallel)(
