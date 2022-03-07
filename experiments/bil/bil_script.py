@@ -75,7 +75,7 @@ def viterbrain():
 
 
 labs = zarr.open("/data/tathey1/bil/image_labels.zarr")
-spacing = (100,100,100)
+spacing = (1,10,10)
 func = stats.mode
 
 new_size = [np.ceil(shap/space) for shap,space in zip(labs.shape, spacing)]
