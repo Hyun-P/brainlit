@@ -735,6 +735,8 @@ class state_generation:
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
 
+
+        print("Constructing viterbrain object")
         viterbrain = ViterBrain(
             G,
             self.tiered_path,
@@ -745,11 +747,13 @@ class state_generation:
             coef_int=1,
             parallel=self.parallel,
         )
+        print("Comoputing weights geomoetry")
 
         viterbrain.compute_all_costs_dist(
             frag_frag_func=viterbrain.frag_frag_dist,
             frag_soma_func=viterbrain.frag_soma_dist,
         )
+        print("Comoputing weights intensity")
 
         viterbrain.compute_all_costs_int()
 
