@@ -58,9 +58,9 @@ def viterbrain():
         resolution = [100, 0.35, 0.35],
         parallel=32,
         prob_path="/data/tathey1/bil/image_probs.zarr",
-        # fragment_path="/data/tathey1/bil/image_labels.zarr",
-        # tiered_path="/data/tathey1/bil/image_tiered.zarr",
-        # states_path ="/data/tathey1/bil/image_nx.pickle"
+        fragment_path="/data/tathey1/bil/image_labels.zarr",
+        tiered_path="/data/tathey1/bil/image_tiered.zarr",
+        states_path ="/data/tathey1/bil/image_nx.pickle"
     )
 
     # sg.predict(
@@ -68,10 +68,10 @@ def viterbrain():
     #     pos_class = 0
     # )
 
-    sg.compute_frags(threshold=0.25)
-    sg.compute_soma_lbls()
-    sg.compute_image_tiered()
-    sg.compute_states()
+    # sg.compute_frags(threshold=0.25)
+    # sg.compute_soma_lbls()
+    # sg.compute_image_tiered()
+    # sg.compute_states()
     sg.compute_edge_weights()
 
 viterbrain()
