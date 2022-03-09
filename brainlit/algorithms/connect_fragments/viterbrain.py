@@ -101,7 +101,7 @@ class ViterBrain:
 
         block_shape = 4*np.divide(dist_cutoff, resolution)
         num_disjoint_blocks = np.floor(np.divide(image_shape, block_shape)).astype(int)
-        self.block_shape_vox = np.divide(image_shape, num_disjoint_blocks)
+        self.block_shape_vox = np.maximum(np.divide(image_shape, num_disjoint_blocks), [1])
         print(f"Image shape {image_shape} makes octree with blocks of voxel shape: {self.block_shape_vox}")
 
 
