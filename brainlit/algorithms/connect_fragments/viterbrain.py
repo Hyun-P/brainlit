@@ -210,7 +210,7 @@ class ViterBrain:
 
         state1 = states[0]
         #for state1 in tqdm(states, desc="computing state costs (geometry)"):
-        for state2 in range(num_states):
+        for state2 in tqdm(range(num_states), desc=f"running state {state1}", leave=False):
             soma_pt = None
 
             if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
