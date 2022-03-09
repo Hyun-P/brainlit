@@ -19,6 +19,7 @@ class ViterBrain:
         coef_curv: float,
         coef_dist: float,
         coef_int: float,
+        dist_cutoff: float = 15,
         parallel: int = 1,
     ) -> None:
         """Initialize ViterBrain object
@@ -37,10 +38,13 @@ class ViterBrain:
         self.num_states = G.number_of_nodes()
         self.tiered_path = tiered_path
         self.fragment_path = fragment_path
+        image_fragment = zarr.open(self.fragment_path, mode="r")
+        self.image_shape = image_fragment.shape
         self.resolution = resolution
         self.coef_curv = coef_curv
         self.coef_dist = coef_dist
         self.coef_int = coef_int
+        self.dist_cutoff = dist_cutoff
         self.parallel = parallel
 
         soma_fragment2coords = {}
@@ -62,6 +66,40 @@ class ViterBrain:
             else:
                 comp_to_states[frag] = [node]
         self.comp_to_states = comp_to_states
+
+        self._create_octree()
+
+    def _find_block(self, node):
+        G = self.nxGraph
+        centroid = np.add(G.nodes[node]["point1"], G.nodes[node]["point2"])/2
+        index = np.floor(np.divide(centroid, self.block_shape_vox)).astype(int)
+        return (index[0],index[1],index[2])
+
+
+    def _create_octree(self):
+        G = self.nxGraph
+        fragment_path = self.fragment_path
+        resolution = self.resolution
+        dist_cutoff = self.dist_cutoff
+        image_shape = self.image_shape
+
+        block_shape = 4*np.divide(dist_cutoff, resolution))
+        self.num_blocks = np.floor(np.divide(image_shape, self.block_shape)).astype(int)
+        self.block_shape_vox = np.divide(image_shape, self.num_blocks)
+        print(f"Making octree of shape: {self.num_blocks} of shape {self.block_shape_vox}")
+
+        octree_lookup = {}
+        for node in tqdm(G.nodes, desc="constructing octree"):
+            index = self._find_block(node)
+            if index in octree_lookup.keys():
+                octree_lookup[index] = octree_lookup[index] + node
+            else:
+                octree_lookup[index] = node
+
+        self.octree = octree_lookup
+
+
+
 
     def frag_frag_dist(
         self,
@@ -88,6 +126,7 @@ class ViterBrain:
             [float]: cost of transition
         """
         res = self.resolution
+        dist_cutoff = self.dist_cutoff
 
         dif = np.multiply(np.subtract(pt2, pt1), res)
 
@@ -102,7 +141,7 @@ class ViterBrain:
                 f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
             )
 
-        if dist > 15:
+        if dist > dist_cutoff:
             return np.inf
 
         k1_sq = 1 - np.dot(dif, orientation1) / dist
