@@ -222,6 +222,7 @@ class ViterBrain:
                 and G.nodes[state2]["type"] == "fragment"
             ):
                 try:
+                    #if np.abs(np.subtract(G.nodes[state1]["point2"],G.nodes[state2]["point1"]))
                     dist_cost = frag_frag_func(
                         G.nodes[state1]["point2"],
                         G.nodes[state1]["orientation2"],
