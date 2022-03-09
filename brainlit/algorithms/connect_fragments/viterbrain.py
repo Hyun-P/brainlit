@@ -264,8 +264,15 @@ class ViterBrain:
         results = []
 
         state1 = states[0]
+        indices = self._find_block(state1)
+        other_states = []
+        for index in indices:
+            other_states += self.octree[index]
+        other_states = np.unique(other_states)
+
         #for state1 in tqdm(states, desc="computing state costs (geometry)"):
-        for state2 in tqdm(range(num_states), desc=f"running state {state1}", leave=False):
+        # for state2 in tqdm(range(num_states), desc=f"running state {state1}", leave=False):
+        for state2 in tqdm(other_states, desc=f"running state {state1}", leave=False):
             soma_pt = None
 
             if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
