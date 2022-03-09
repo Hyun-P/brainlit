@@ -78,13 +78,12 @@ class ViterBrain:
 
     def _create_octree(self):
         G = self.nxGraph
-        fragment_path = self.fragment_path
         resolution = self.resolution
         dist_cutoff = self.dist_cutoff
         image_shape = self.image_shape
 
-        block_shape = 4*np.divide(dist_cutoff, resolution))
-        self.num_blocks = np.floor(np.divide(image_shape, self.block_shape)).astype(int)
+        block_shape = 4*np.divide(dist_cutoff, resolution)
+        self.num_blocks = np.floor(np.divide(image_shape, block_shape)).astype(int)
         self.block_shape_vox = np.divide(image_shape, self.num_blocks)
         print(f"Making octree of shape: {self.num_blocks} of shape {self.block_shape_vox}")
 
