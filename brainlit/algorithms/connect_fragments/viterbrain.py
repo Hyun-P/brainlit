@@ -260,9 +260,9 @@ class ViterBrain:
 
         results_tuple = Parallel(n_jobs=parallel)(
             delayed(self._compute_out_costs_dist)(
-                states, frag_frag_func, frag_soma_func
+                [state], frag_frag_func, frag_soma_func
             )
-            for states in state_sets
+            for state in np.arange(self.num_states)
         )
 
         results = [item for result in results_tuple for item in result]
