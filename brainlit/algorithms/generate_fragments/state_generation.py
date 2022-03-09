@@ -747,7 +747,7 @@ class state_generation:
             coef_int=1,
             parallel=self.parallel,
         )
-        print("Comoputing weights geomoetry")
+        print("Computing weights geomoetry")
 
         viterbrain.compute_all_costs_dist(
             frag_frag_func=viterbrain.frag_frag_dist,

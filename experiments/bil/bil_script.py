@@ -68,10 +68,10 @@ def viterbrain():
     #     pos_class = 0
     # )
 
-    # sg.compute_frags(threshold=0.15)
-    # sg.compute_soma_lbls()
-    # sg.compute_image_tiered()
-    # sg.compute_states()
+    sg.compute_frags(threshold=0.25)
+    sg.compute_soma_lbls()
+    sg.compute_image_tiered()
+    sg.compute_states()
     sg.compute_edge_weights()
 
 viterbrain()
