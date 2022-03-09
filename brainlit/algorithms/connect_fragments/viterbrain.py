@@ -71,9 +71,26 @@ class ViterBrain:
 
     def _find_block(self, node):
         G = self.nxGraph
+        block_shape_vox = self.block_shape_vox
         centroid = np.add(G.nodes[node]["point1"], G.nodes[node]["point2"])/2
-        index = np.floor(np.divide(centroid, self.block_shape_vox)).astype(int)
-        return (index[0],index[1],index[2])
+        print(f"centroid: {centroid}")
+
+        indices = [[], [], []]
+        for dim in range(3):
+            idx1 = np.floor(np.divide(centroid[dim], block_shape_vox[dim])).astype(int)*2
+            indices[dim].append(idx1)
+            if centroid[dim] >= block_shape_vox/2 and centroid[dim] <= self.image_shape[dim] - block_shape_vox/2:
+                idx2 = np.floor(np.divide(centroid[dim]-block_shape_vox/2, block_shape_vox[dim])).astype(int)*2 + 1
+                indices[dim].append(idx2)
+
+        indices_octree = []
+        for x in indices[0]:
+            for y in indices[1]:
+                for z in indices[2]:
+                    indices_octree.append((x,y,z))
+
+        print(f"indices: {indices_octree}")
+        return indices_octree
 
 
     def _create_octree(self):
@@ -83,17 +100,19 @@ class ViterBrain:
         image_shape = self.image_shape
 
         block_shape = 4*np.divide(dist_cutoff, resolution)
-        self.num_blocks = np.floor(np.divide(image_shape, block_shape)).astype(int)
-        self.block_shape_vox = np.divide(image_shape, self.num_blocks)
-        print(f"Making octree of shape: {self.num_blocks} of shape {self.block_shape_vox}")
+        num_disjoint_blocks = np.floor(np.divide(image_shape, block_shape)).astype(int)
+        self.block_shape_vox = np.divide(image_shape, num_disjoint_blocks)
+        print(f"Image shape {image_shape} makes octree with blocks of voxel shape: {self.block_shape_vox}")
+
 
         octree_lookup = {}
         for node in tqdm(G.nodes, desc="constructing octree"):
-            index = self._find_block(node)
-            if index in octree_lookup.keys():
-                octree_lookup[index] = octree_lookup[index] + node
-            else:
-                octree_lookup[index] = node
+            indices = self._find_block(node)
+            for index in indices:
+                if index in octree_lookup.keys():
+                    octree_lookup[index] = octree_lookup[index] + node
+                else:
+                    octree_lookup[index] = node
 
         self.octree = octree_lookup
 
