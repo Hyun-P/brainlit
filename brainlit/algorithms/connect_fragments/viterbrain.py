@@ -113,9 +113,7 @@ class ViterBrain:
                     octree_lookup[index] = node
 
         self.octree = octree_lookup
-
-
-
+        print(self.octree)
 
     def frag_frag_dist(
         self,
