@@ -266,6 +266,8 @@ class ViterBrain:
         state1 = states[0]
         indices = self._find_block(state1)
         other_states = []
+        print(f"indices: {indices}")
+        print(f"first octree list: {self.octree[indices[0]]}")
         for index in indices:
             other_states += self.octree[index]
         other_states = np.unique(other_states)
