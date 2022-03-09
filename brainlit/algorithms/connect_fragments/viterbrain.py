@@ -263,8 +263,6 @@ class ViterBrain:
         state1 = states[0]
         indices = self._find_block(state1)
         other_states = []
-        print(f"indices: {indices}")
-        print(f"first octree list: {self.octree[indices[0]]}")
         for index in indices:
             other_states += self.octree[index]
         other_states = np.unique(other_states)
@@ -284,7 +282,7 @@ class ViterBrain:
             ):
                 try:
                     if (np.abs(np.subtract(G.nodes[state1]["point2"],G.nodes[state2]["point1"])) > 50).any():
-                        dist_cost == np.inf
+                        dist_cost = np.inf
                     else:
                         dist_cost = frag_frag_func(
                             G.nodes[state1]["point2"],
