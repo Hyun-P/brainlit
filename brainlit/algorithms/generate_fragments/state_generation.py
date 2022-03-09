@@ -198,6 +198,7 @@ class state_generation:
         corner1: List[int],
         corner2: List[int],
         soma_coords: List[list] = [],
+        threshold: int = 0.9,
     ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute fragments of image chunk
 
@@ -210,7 +211,6 @@ class state_generation:
             tuple: tuple containing corner coordinates and fragment image
         """
         # print(f"Processing @corner: {corner1} to {corner2}")
-        threshold = 0.9
 
         prob = zarr.open(self.prob_path, mode="r")
 
@@ -269,7 +269,7 @@ class state_generation:
         # np.save(fname, new_labels)
         return (corner1, corner2, new_labels)
 
-    def compute_frags(self) -> None:
+    def compute_frags(self, threshold = 0.9) -> None:
         """Compute all fragments for image"""
         image = zarr.open(self.image_path, mode="r")
         items = self.image_path.split(".")
@@ -294,6 +294,7 @@ class state_generation:
                     specification["corner1"],
                     specification["corner2"],
                     specification["soma_coords"],
+                    threshold
                 )
                 for specification in tqdm(
                     specifications,

@@ -63,12 +63,12 @@ def viterbrain():
         # states_path ="/data/tathey1/bil/image_nx.pickle"
     )
 
-    sg.predict(
-        data_bin="/data/tathey1/bil/files_bay/",
-        pos_class = 0
-    )
+    # sg.predict(
+    #     data_bin="/data/tathey1/bil/files_bay/",
+    #     pos_class = 0
+    # )
 
-    sg.compute_frags()
+    sg.compute_frags(threshold=0.15)
     sg.compute_soma_lbls()
     sg.compute_image_tiered()
     sg.compute_states()
