@@ -80,7 +80,7 @@ class ViterBrain:
             idx1 = np.floor(np.divide(centroid[dim], block_shape_vox[dim])).astype(int)*2
             indices[dim].append(idx1)
             if (centroid[dim] >= block_shape_vox[dim]/2) and (centroid[dim] <= self.image_shape[dim] - block_shape_vox[dim]/2):
-                idx2 = np.floor(np.divide(centroid[dim]-block_shape_vox/2, block_shape_vox[dim])).astype(int)*2 + 1
+                idx2 = np.floor(np.divide(centroid[dim]-block_shape_vox[dim]/2, block_shape_vox[dim])).astype(int)*2 + 1
                 indices[dim].append(idx2)
 
         indices_octree = []
