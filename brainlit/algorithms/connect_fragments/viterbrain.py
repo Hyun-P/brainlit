@@ -73,7 +73,6 @@ class ViterBrain:
         G = self.nxGraph
         block_shape_vox = self.block_shape_vox
         centroid = np.add(G.nodes[node]["point1"], G.nodes[node]["point2"])/2
-        print(f"centroid: {centroid}")
 
         indices = [[], [], []]
         for dim in range(3):
@@ -89,7 +88,6 @@ class ViterBrain:
                 for z in indices[2]:
                     indices_octree.append((x,y,z))
 
-        print(f"indices: {indices_octree}")
         return indices_octree
 
 
