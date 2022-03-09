@@ -207,41 +207,43 @@ class ViterBrain:
         G = self.nxGraph
 
         results = []
-        for state1 in tqdm(states, desc="computing state costs (geometry)"):
-            for state2 in range(num_states):
-                soma_pt = None
 
-                if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
-                    continue
-                elif G.nodes[state1]["type"] == "soma":
-                    continue
-                elif (
-                    G.nodes[state1]["type"] == "fragment"
-                    and G.nodes[state2]["type"] == "fragment"
-                ):
-                    try:
-                        dist_cost = frag_frag_func(
-                            G.nodes[state1]["point2"],
-                            G.nodes[state1]["orientation2"],
-                            G.nodes[state2]["point1"],
-                            G.nodes[state2]["orientation1"],
-                        )
-                    except:
-                        raise ValueError(
-                            f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}"
-                        )
-                elif (
-                    G.nodes[state1]["type"] == "fragment"
-                    and G.nodes[state2]["type"] == "soma"
-                ):
-                    dist_cost, soma_pt = frag_soma_func(
+        state1 = states[0]
+        #for state1 in tqdm(states, desc="computing state costs (geometry)"):
+        for state2 in range(num_states):
+            soma_pt = None
+
+            if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
+                continue
+            elif G.nodes[state1]["type"] == "soma":
+                continue
+            elif (
+                G.nodes[state1]["type"] == "fragment"
+                and G.nodes[state2]["type"] == "fragment"
+            ):
+                try:
+                    dist_cost = frag_frag_func(
                         G.nodes[state1]["point2"],
                         G.nodes[state1]["orientation2"],
-                        G.nodes[state2]["fragment"],
+                        G.nodes[state2]["point1"],
+                        G.nodes[state2]["orientation1"],
                     )
+                except:
+                    raise ValueError(
+                        f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}"
+                    )
+            elif (
+                G.nodes[state1]["type"] == "fragment"
+                and G.nodes[state2]["type"] == "soma"
+            ):
+                dist_cost, soma_pt = frag_soma_func(
+                    G.nodes[state1]["point2"],
+                    G.nodes[state1]["orientation2"],
+                    G.nodes[state2]["fragment"],
+                )
 
-                if np.isfinite(dist_cost):
-                    results.append((state1, state2, dist_cost, soma_pt))
+            if np.isfinite(dist_cost):
+                results.append((state1, state2, dist_cost, soma_pt))
         return results
 
     def compute_all_costs_dist(
@@ -262,7 +264,7 @@ class ViterBrain:
             delayed(self._compute_out_costs_dist)(
                 [state], frag_frag_func, frag_soma_func
             )
-            for state in np.arange(self.num_states)
+            for state in tqdm(np.arange(self.num_states))
         )
 
         results = [item for result in results_tuple for item in result]
