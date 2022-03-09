@@ -108,9 +108,9 @@ class ViterBrain:
             indices = self._find_block(node)
             for index in indices:
                 if index in octree_lookup.keys():
-                    octree_lookup[index] = octree_lookup[index] + node
+                    octree_lookup[index] = octree_lookup[index] + [node]
                 else:
-                    octree_lookup[index] = node
+                    octree_lookup[index] = [node]
 
         self.octree = octree_lookup
         print(self.octree)
