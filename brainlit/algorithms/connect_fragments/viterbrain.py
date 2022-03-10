@@ -260,52 +260,52 @@ class ViterBrain:
 
         results = []
 
-        state1 = states[0]
-        indices = self._find_block(state1)
-        other_states = []
-        for index in indices:
-            other_states += self.octree[index]
-        other_states = np.unique(other_states)
 
-        #for state1 in tqdm(states, desc="computing state costs (geometry)"):
+        for state1 in tqdm(states, desc="computing state costs (geometry)"):
+            #state1 = states[0]
+            indices = self._find_block(state1)
+            other_states = []
+            for index in indices:
+                other_states += self.octree[index]
+            other_states = np.unique(other_states)
         # for state2 in tqdm(range(num_states), desc=f"running state {state1}", leave=False):
-        for state2 in tqdm(other_states, desc=f"running state {state1}", leave=False, disable=True):
-            soma_pt = None
+            for state2 in tqdm(other_states, desc=f"running state {state1}", leave=False, disable=True):
+                soma_pt = None
 
-            if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
-                continue
-            elif G.nodes[state1]["type"] == "soma":
-                continue
-            elif (
-                G.nodes[state1]["type"] == "fragment"
-                and G.nodes[state2]["type"] == "fragment"
-            ):
-                try:
-                    if (np.abs(np.subtract(G.nodes[state1]["point2"],G.nodes[state2]["point1"])) > 50).any():
-                        dist_cost = np.inf
-                    else:
-                        dist_cost = frag_frag_func(
-                            G.nodes[state1]["point2"],
-                            G.nodes[state1]["orientation2"],
-                            G.nodes[state2]["point1"],
-                            G.nodes[state2]["orientation1"],
+                if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
+                    continue
+                elif G.nodes[state1]["type"] == "soma":
+                    continue
+                elif (
+                    G.nodes[state1]["type"] == "fragment"
+                    and G.nodes[state2]["type"] == "fragment"
+                ):
+                    try:
+                        if (np.abs(np.subtract(G.nodes[state1]["point2"],G.nodes[state2]["point1"])) > 50).any():
+                            dist_cost = np.inf
+                        else:
+                            dist_cost = frag_frag_func(
+                                G.nodes[state1]["point2"],
+                                G.nodes[state1]["orientation2"],
+                                G.nodes[state2]["point1"],
+                                G.nodes[state2]["orientation1"],
+                            )
+                    except:
+                        raise ValueError(
+                            f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}"
                         )
-                except:
-                    raise ValueError(
-                        f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}"
+                elif (
+                    G.nodes[state1]["type"] == "fragment"
+                    and G.nodes[state2]["type"] == "soma"
+                ):
+                    dist_cost, soma_pt = frag_soma_func(
+                        G.nodes[state1]["point2"],
+                        G.nodes[state1]["orientation2"],
+                        G.nodes[state2]["fragment"],
                     )
-            elif (
-                G.nodes[state1]["type"] == "fragment"
-                and G.nodes[state2]["type"] == "soma"
-            ):
-                dist_cost, soma_pt = frag_soma_func(
-                    G.nodes[state1]["point2"],
-                    G.nodes[state1]["orientation2"],
-                    G.nodes[state2]["fragment"],
-                )
 
-            if np.isfinite(dist_cost):
-                results.append((state1, state2, dist_cost, soma_pt))
+                if np.isfinite(dist_cost):
+                    results.append((state1, state2, dist_cost, soma_pt))
         return results
 
     def compute_all_costs_dist(
@@ -324,9 +324,10 @@ class ViterBrain:
 
         results_tuple = Parallel(n_jobs=parallel)(
             delayed(self._compute_out_costs_dist)(
-                [state], frag_frag_func, frag_soma_func
+                state_set, frag_frag_func, frag_soma_func
             )
-            for state in tqdm(np.arange(self.num_states), "computing dist weights")
+            for state_set in state_sets
+            #for state in tqdm(np.arange(self.num_states), "computing dist weights")
         )
 
         results = [item for result in results_tuple for item in result]
