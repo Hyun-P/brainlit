@@ -80,7 +80,7 @@ print("loading viterbrain object")
 with open("/data/tathey1/bil/image_viterbrain_geomoonly.pickle", "rb") as handle:
     viterbrain = pickle.load(handle)
 
-print('running computatino')
+print('running computatino w? {viterbrain.parallel}')
 viterbrain.compute_all_costs_int()
 print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
 

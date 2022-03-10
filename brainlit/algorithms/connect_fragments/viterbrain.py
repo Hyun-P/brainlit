@@ -422,7 +422,7 @@ class ViterBrain:
                     G.nodes[state1]["point2"], G.nodes[state2]["point1"]
                 )
                 int_cost = line_int_cost + G.nodes[state2]["image_cost"]
-                results.append((state1, state2, line_int_cost))
+                results.append((state1, state2, int_cost))
             elif (
                 G.nodes[state1]["type"] == "fragment"
                 and G.nodes[state2]["type"] == "soma"
@@ -441,26 +441,29 @@ class ViterBrain:
         parallel = self.parallel
         G = self.nxGraph
 
-        state_sets = np.array_split(np.arange(self.num_states), parallel)
 
-        results_tuple = []
-        for state in tqdm(np.arange(self.num_states), "computing int weights"):
-            result = self._compute_out_int_costs([state])
-            results_tuple.append(result)
+        num_blocks = int(self.num_states/1000)
+        state_sets = np.array_split(np.arange(self.num_states), num_blocks)
 
-        # results_tuple = Parallel(n_jobs=parallel)(
-        #     delayed(self._compute_out_int_costs)(states) for states in state_sets
-        # )
+        # results_tuple = []
+        # for state in tqdm(np.arange(self.num_states), "computing int weights"):
+        #     result = self._compute_out_int_costs([state])
+        #     results_tuple.append(result)
 
-        results = [item for result in results_tuple for item in result]
-        for result in results:
-            state1, state2, int_cost = result
-            if int_cost != np.inf:
-                G.edges[state1, state2]["int_cost"] = int_cost
-                G.edges[state1, state2]["total_cost"] = (
-                    G.edges[state1, state2]["int_cost"]
-                    + G.edges[state1, state2]["dist_cost"]
-                )
+        for state_set in tqdm(state_sets, desc="computing int costs"):            
+            results_tuple = Parallel(n_jobs=parallel)(
+                delayed(self._compute_out_int_costs)(state) for state in tqdm(state_set, desc="Computimg", leave=False)
+            )
+
+            results = [item for result in results_tuple for item in result]
+            for result in tqdm(results, desc="writing", leave=False):
+                state1, state2, int_cost = result
+                if int_cost != np.inf:
+                    G.edges[state1, state2]["int_cost"] = int_cost
+                    G.edges[state1, state2]["total_cost"] = (
+                        G.edges[state1, state2]["int_cost"]
+                        + G.edges[state1, state2]["dist_cost"]
+                    )
 
     def shortest_path(self, coord1: List[int], coord2: List[int]) -> List[List[int]]:
         """Compute coordinate path from one coordinate to another.
