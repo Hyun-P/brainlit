@@ -465,6 +465,38 @@ class ViterBrain:
                         + G.edges[state1, state2]["dist_cost"]
                     )
 
+    def compute_all_costs_int_edges(self) -> None:
+        G = self.nxGraph
+        for edge in tqdm(G.edges()):
+            state1 = edge[0]
+            state2 = edge[1]
+            if G.nodes[state1]["type"] == "soma":
+                continue
+            elif (
+                G.nodes[state1]["type"] == "fragment"
+                and G.nodes[state2]["type"] == "fragment"
+            ):
+                line_int_cost = self._line_int(
+                    G.nodes[state1]["point2"], G.nodes[state2]["point1"]
+                )
+                int_cost = line_int_cost + G.nodes[state2]["image_cost"]
+            elif (
+                G.nodes[state1]["type"] == "fragment"
+                and G.nodes[state2]["type"] == "soma"
+            ):
+                int_cost = self._line_int(
+                    G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
+                )
+
+
+            if int_cost != np.inf:
+                G.edges[state1, state2]["int_cost"] = int_cost
+                G.edges[state1, state2]["total_cost"] = (
+                    G.edges[state1, state2]["int_cost"]
+                    + G.edges[state1, state2]["dist_cost"]
+                )
+
+
     def shortest_path(self, coord1: List[int], coord2: List[int]) -> List[List[int]]:
         """Compute coordinate path from one coordinate to another.
 
