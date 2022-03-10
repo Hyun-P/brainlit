@@ -7,6 +7,7 @@ from brainlit.viz.swc2voxel import Bresenham3D
 from brainlit.preprocessing import image_process
 import networkx as nx
 from typing import List, Tuple, Callable
+import pickle
 
 
 class ViterBrain:
@@ -467,7 +468,7 @@ class ViterBrain:
 
     def compute_all_costs_int_edges(self) -> None:
         G = self.nxGraph
-        for edge in tqdm(G.edges()):
+        for i, edge in enumerate(tqdm(G.edges())):
             state1 = edge[0]
             state2 = edge[1]
             if G.nodes[state1]["type"] == "soma":
@@ -495,6 +496,10 @@ class ViterBrain:
                     G.edges[state1, state2]["int_cost"]
                     + G.edges[state1, state2]["dist_cost"]
                 )
+
+            if i % 10000000 == 0:
+                with open("/data/tathey1/bil/image_viterbrain_" + str(i) + ".pickle", "wb") as handle:
+                    pickle.dump(self, handle)
 
 
     def shortest_path(self, coord1: List[int], coord2: List[int]) -> List[List[int]]:
