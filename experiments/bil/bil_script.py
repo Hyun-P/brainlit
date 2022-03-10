@@ -10,6 +10,7 @@ from brainlit.algorithms.generate_fragments.state_generation import state_genera
 from skimage import measure
 from scipy import stats
 from joblib import Parallel, delayed
+import pickle
 
 PIL.Image.MAX_IMAGE_PIXELS = 1056323868
 
@@ -72,9 +73,18 @@ def viterbrain():
     # sg.compute_soma_lbls()
     # sg.compute_image_tiered()
     # sg.compute_states()
-    sg.compute_edge_weights()
+    # sg.compute_edge_weights()
 
-viterbrain()
+
+
+with open("/data/tathey1/bil/image_viterbrain_geomooonly.pickle", "rb") as handle:
+    viterbrain = pickle.load(handle)
+
+viterbrain.compute_all_costs_int()
+print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
+
+with open("/data/tathey1/bil/image_viterbrain.pickle", "wb") as handle:
+    pickle.dump(viterbrain, handle)
 
 # Downsample
 

@@ -398,33 +398,41 @@ class ViterBrain:
         G = self.nxGraph
 
         results = []
-        for state1 in tqdm(states, desc="Computing state costs (intensity)"):
-            for state2 in range(num_states):
-                if G.nodes[state1]["fragment"] == G.nodes[state2][
-                    "fragment"
-                ] or not G.has_edge(state1, state2):
-                    continue
-                elif G.nodes[state1]["type"] == "soma":
-                    continue
-                elif (
-                    G.nodes[state1]["type"] == "fragment"
-                    and G.nodes[state2]["type"] == "fragment"
-                ):
-                    line_int_cost = self._line_int(
-                        G.nodes[state1]["point2"], G.nodes[state2]["point1"]
-                    )
-                    int_cost = line_int_cost + G.nodes[state2]["image_cost"]
-                    results.append((state1, state2, line_int_cost))
-                elif (
-                    G.nodes[state1]["type"] == "fragment"
-                    and G.nodes[state2]["type"] == "soma"
-                ):
-                    line_int_cost = self._line_int(
-                        G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
-                    )
-                    results.append((state1, state2, line_int_cost))
-                else:
-                    raise ValueError("No cases caught int")
+        #for state1 in tqdm(states, desc="Computing state costs (intensity)"):
+        state1 = states[0]
+        indices = self._find_block(state1)
+        other_states = []
+        for index in indices:
+            other_states += self.octree[index]
+        other_states = np.unique(other_states)
+        
+
+        for state2 in other_states:
+            if G.nodes[state1]["fragment"] == G.nodes[state2][
+                "fragment"
+            ] or not G.has_edge(state1, state2):
+                continue
+            elif G.nodes[state1]["type"] == "soma":
+                continue
+            elif (
+                G.nodes[state1]["type"] == "fragment"
+                and G.nodes[state2]["type"] == "fragment"
+            ):
+                line_int_cost = self._line_int(
+                    G.nodes[state1]["point2"], G.nodes[state2]["point1"]
+                )
+                int_cost = line_int_cost + G.nodes[state2]["image_cost"]
+                results.append((state1, state2, line_int_cost))
+            elif (
+                G.nodes[state1]["type"] == "fragment"
+                and G.nodes[state2]["type"] == "soma"
+            ):
+                line_int_cost = self._line_int(
+                    G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
+                )
+                results.append((state1, state2, line_int_cost))
+            else:
+                raise ValueError("No cases caught int")
 
         return results
 
@@ -435,9 +443,14 @@ class ViterBrain:
 
         state_sets = np.array_split(np.arange(self.num_states), parallel)
 
-        results_tuple = Parallel(n_jobs=parallel)(
-            delayed(self._compute_out_int_costs)(states) for states in state_sets
-        )
+        results_tuple = []
+        for state in tqdm(np.arange(self.num_states), "computing int weights"):
+            result = self._compute_out_int_costs([state])
+            results_tuple.append(result)
+
+        # results_tuple = Parallel(n_jobs=parallel)(
+        #     delayed(self._compute_out_int_costs)(states) for states in state_sets
+        # )
 
         results = [item for result in results_tuple for item in result]
         for result in results:
