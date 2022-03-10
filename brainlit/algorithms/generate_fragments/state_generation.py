@@ -731,6 +731,7 @@ class state_generation:
         """Create viterbrain object and compute edge weights"""
         items = self.image_path.split(".")
         viterbrain_fname = items[0] + "_viterbrain.pickle"
+        viterbrain_fname_dist = items[0] + "_viterbrain_geomoonly.pickle"
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
@@ -753,6 +754,8 @@ class state_generation:
             frag_frag_func=viterbrain.frag_frag_dist,
             frag_soma_func=viterbrain.frag_soma_dist,
         )
+        with open(viterbrain_fname_dist, "wb") as handle:
+            pickle.dump(viterbrain, handle)
         print("Comoputing weights intensity")
 
         viterbrain.compute_all_costs_int()
