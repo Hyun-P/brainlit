@@ -324,7 +324,7 @@ class ViterBrain:
 
         results_tuple = []
         for state in tqdm(np.arange(self.num_states), "computing dist weights"):
-            result = self._compute_out_costs_dist(state_set, frag_frag_func, frag_soma_func)
+            result = self._compute_out_costs_dist([state], frag_frag_func, frag_soma_func)
             results_tuple.append(result)
         # results_tuple = Parallel(n_jobs=parallel)(
         #     delayed(self._compute_out_costs_dist)(
