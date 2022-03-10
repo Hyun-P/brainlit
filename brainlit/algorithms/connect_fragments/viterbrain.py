@@ -400,17 +400,17 @@ class ViterBrain:
         results = []
         #for state1 in tqdm(states, desc="Computing state costs (intensity)"):
         state1 = states[0]
-        # indices = self._find_block(state1)
-        # other_states = []
-        # for index in indices:
-        #     other_states += self.octree[index]
-        # other_states = np.unique(other_states)
+        indices = self._find_block(state1)
+        other_states = []
+        for index in indices:
+            other_states += self.octree[index]
+        other_states = np.unique(other_states)
         
 
-        for state2 in range(self.num_states):
-            if G.nodes[state1]["fragment"] == G.nodes[state2][
+        for state2 in other_states:
+            if not G.has_edge(state1, state2) or G.nodes[state1]["fragment"] == G.nodes[state2][
                 "fragment"
-            ] or not G.has_edge(state1, state2):
+            ]:
                 continue
             elif G.nodes[state1]["type"] == "soma":
                 continue
