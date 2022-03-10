@@ -407,7 +407,7 @@ class ViterBrain:
         other_states = np.unique(other_states)
         
 
-        for state2 in other_states:
+        for state2 in range(self.num_states):
             if G.nodes[state1]["fragment"] == G.nodes[state2][
                 "fragment"
             ] or not G.has_edge(state1, state2):
