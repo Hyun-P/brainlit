@@ -77,7 +77,7 @@ def viterbrain():
 
 
 
-with open("/data/tathey1/bil/image_viterbrain_geomooonly.pickle", "rb") as handle:
+with open("/data/tathey1/bil/image_viterbrain_geomoonly.pickle", "rb") as handle:
     viterbrain = pickle.load(handle)
 
 viterbrain.compute_all_costs_int()
