@@ -76,16 +76,18 @@ def viterbrain():
     sg.compute_edge_weights()
 
 
-print("loading viterbrain object")
-with open("/data/tathey1/bil/image_viterbrain_geomoonly.pickle", "rb") as handle:
-    viterbrain = pickle.load(handle)
+viterbrain()
 
-print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
-print(f'running computatino w? {viterbrain.parallel}')
-viterbrain.compute_all_costs_int_edges()
+# print("loading viterbrain object")
+# with open("/data/tathey1/bil/image_viterbrain_geomoonly.pickle", "rb") as handle:
+#     viterbrain = pickle.load(handle)
 
-with open("/data/tathey1/bil/image_viterbrain.pickle", "wb") as handle:
-    pickle.dump(viterbrain, handle)
+# print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
+# print(f'running computatino w? {viterbrain.parallel}')
+# viterbrain.compute_all_costs_int_edges()
+
+# with open("/data/tathey1/bil/image_viterbrain.pickle", "wb") as handle:
+#     pickle.dump(viterbrain, handle)
 
 # Downsample
 
