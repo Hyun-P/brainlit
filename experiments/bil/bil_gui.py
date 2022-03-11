@@ -1,65 +1,39 @@
-from mouselight_code.src import (
-    dynamic_programming_connected_double_learn,
-    image_process,
-)
-
-# import pandas as pd
-from pathlib import Path
-from networkx.algorithms.operators.unary import reverse
-from skimage import io, measure
-from sklearn.metrics import pairwise_distances_argmin_min
-import matplotlib.pyplot as plt
-import numpy as np
+from re import L
 import napari
-import pickle
-import networkx as nx
-import scipy.ndimage as ndi
-from tqdm import tqdm
-import random
-import os
-
-# from scipy import stats
-from mouselight_code.src.swc2voxel import Bresenham3D
-import subprocess
-import h5py
+import PIL.Image
+import numpy as np
 from napari_animation import AnimationWidget
-import similaritymeasures
-from cloudvolume import Skeleton
-import re
-from brainlit.utils.Neuron_trace import NeuronTrace
-import zarr
+import pickle
+from tqdm import tqdm
+import networkx as nx
 
-scale = [0.3, 0.3, 1]
-num = 0
+PIL.Image.MAX_IMAGE_PIXELS = 1056323868
 
-root_dir = Path(os.path.abspath(""))
-data_dir = os.path.join(root_dir, "data", "example")
-path = os.path.join(data_dir, "viterbi_0_multisoma.pickle")
-
-with open(path, "rb") as handle:
+print("loading vb")
+with open("/Users/thomasathey/Documents/mimlab/mouselight/BIL/image_viterbrain_old.pickle", "rb") as handle:
     viterbi = pickle.load(handle)
 
-state2centroid = {}
-for soma_frag in viterbi.soma_fragment2coords.keys():
-    state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
+print("loading nx")
+with open("/Users/thomasathey/Documents/mimlab/mouselight/BIL/image_viterbrain_nxGraph_light.pickle", "rb") as handle:
+    nxGraph = pickle.load(handle)
+viterbi.nxGraph = nxGraph
+print("loading c2s")
+with open("/Users/thomasathey/Documents/mimlab/mouselight/BIL/image_viterbrain_comp2states.pickle", "rb") as handle:
+    comp_to_states = pickle.load(handle)
+viterbi.comp_to_states = comp_to_states
+print("loading f2c")
+with open("/Users/thomasathey/Documents/mimlab/mouselight/BIL/image_viterbrain_soma_fragment2coords.pickle", "rb") as handle:
+    soma_fragment2coords = pickle.load(handle)
+viterbi.soma_fragment2coords = soma_fragment2coords
+print("running")
 
-z = zarr.open(viterbi.fragment_path[:-12] + ".zarr", "r")
-im = z[:, :, :]
-print(f"Image shape: {im.shape}")
-z = zarr.open(viterbi.fragment_path, "r")
-new_labels = z[:, :, :]
+scale = [100, 0.35, 0.35]
 
-nt = NeuronTrace(
-    path="/Users/thomasathey/Documents/mimlab/mouselight/pres/mim_slides/SNT_Data.swc"
-)
-df = nt.get_df()
-SNT = df[["x", "y", "z"]].to_numpy()
-SNT[:, [0, 1, 2]] = SNT[:, [2, 1, 0]]
+# state2centroid = {}
+# for soma_frag in viterbi.soma_fragment2coords.keys():
+#     state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
 
-viewer = napari.Viewer(ndisplay=3)
-viewer.add_image(im, name="image", scale=scale)
-# viewer.add_shapes(SNT, shape_type="path", edge_color="blue", edge_width=1)
-labels_layer = viewer.add_labels(new_labels, name="labels", scale=scale)
+viewer = napari.Viewer()
 animation_widget = AnimationWidget(viewer)
 viewer.window.add_dock_widget(animation_widget, area="right")
 viewer.camera.angles = [0, -90, 180]
@@ -167,29 +141,42 @@ def draw_arrow(val, state):
 def draw_points(val, state):
     if viterbi.nxGraph.nodes[state]["type"] == "fragment":
         pt1 = viterbi.nxGraph.nodes[state]["point1"]
+        print(pt1)
         pt2 = viterbi.nxGraph.nodes[state]["point2"]
+        print(pt2)
         pt1 = [int(p) for p in pt1] 
+        print(pt1)
         pt2 = [int(p) for p in pt2] 
+        print(pt2)
 
         viewer.add_points([pt1, pt2],
             name=f"state {state} label {val} head",
             scale=scale,)
+        print(np.multiply(pt1, scale))
+        print(np.multiply(pt2, scale))
         return pt2
+
 
 @viewer.mouse_drag_callbacks.append
 def select_state(viewer, event):
-    data_coordinates = labels_layer.world_to_data(event.position)
-    cords = np.round(data_coordinates).astype(int)
+    for l in range(len(viewer.layers)):
+        layer = viewer.layers[l]
+        if type(layer) == napari.layers.labels.labels.Labels:
+            labels_layer = layer
+            break
+
     val = labels_layer.get_value(
         position=event.position,
         view_direction=event.view_direction,
         dims_displayed=event.dims_displayed,
         world=True,
     )
+    val = val[1]
     if val is None:
         return
     elif val != 0:
         state = viterbi.comp_to_states[val][0]
+
         states, _, _, _ = get_layers()
         if state in states.keys():
             print(f"State {state} already selected")
@@ -224,7 +211,7 @@ def switch_state(viewer):
 
 
 def drawpath(state1, state2):
-    path_states = nx.shortest_path(viterbi.nxGraph, state1, state2, weight="weight")
+    path_states = nx.shortest_path(viterbi.nxGraph, state1, state2, weight="total_cost")
 
     path_comps = []
     for state in path_states:
@@ -270,6 +257,7 @@ def drawpath_points(state1, state2):
         points.append(pt2)
     return points
 
+
 @viewer.bind_key("t")
 def trace(viewer):
     states, traces, state_order, soma_end = get_layers()
@@ -277,25 +265,22 @@ def trace(viewer):
         state1 = state_order[-2]
         state2 = state_order[-1]
         print(f"Tracing from {state1} to {state2}")
-        lines = drawpath(state1, state2)
-        viewer.add_shapes(
-            lines,
-            shape_type="path",
-            edge_color=colors[-1],
-            edge_width=1,
-            name=f"trace {state1} to {state2}",
-            scale=scale,
-        )
-
-
         points = drawpath_points(state1, state2)
+        # viewer.add_shapes(
+        #     lines,
+        #     shape_type="path",
+        #     edge_color=colors[-1],
+        #     edge_width=1,
+        #     name=f"trace {state1} to {state2}",
+        #     scale=scale,
+        # )
         viewer.add_points(points)
 
         layers = states[state1]  # + states[state2]
         if soma_end:
             layers += states[state2]
 
-        #remove_layers(layers)
+        remove_layers(layers)
     else:
         print("Not enough states selected")
 
@@ -343,6 +328,16 @@ def clear_all(viewer):
 @viewer.bind_key("n")
 def clear_all(viewer):
     colors.pop()
+
+@viewer.bind_key("l")
+def clear_all(viewer):
+    for l in range(len(viewer.layers)):
+        layer = viewer.layers[l]
+        if type(layer) == napari.layers.labels.labels.Labels:
+            labels_layer = layer
+        print(layer)
+        print(type(layer))
+
 
 
 napari.run()

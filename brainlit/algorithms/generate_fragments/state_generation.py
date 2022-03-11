@@ -280,7 +280,7 @@ class state_generation:
             mode="w",
             shape=np.squeeze(image.shape),
             chunks=image.chunks,
-            dtype="uint16",
+            dtype="uint32",
         )
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
@@ -755,7 +755,7 @@ class state_generation:
         with open(viterbrain_fname_dist, "wb") as handle:
             pickle.dump(viterbrain, handle)
 
-        viterbrain.compute_all_costs_int()
+        viterbrain.compute_all_costs_int_edges()
 
         print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
 
