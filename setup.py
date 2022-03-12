@@ -1,5 +1,6 @@
 import os
 import sys
+from importlib_metadata import entry_points
 from setuptools import setup, find_packages
 from sys import platform
 
@@ -70,4 +71,11 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
+    #entry_points={'napari.plugin': 'plugin_name = brainlit.napari_viterbrain.viterbrain_plugin'}
+    entry_points={
+        "napari.manifest": [
+            "brainlit = brainlit.napari_viterbrain:napari.yaml",
+        ],
+    },
+    package_data={"brainlit.napari_viterbrain": ["napari.yaml"]},
 )

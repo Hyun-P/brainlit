@@ -423,7 +423,7 @@ class state_generation:
 
         specification_blocks = self._get_frag_specifications()
 
-        for i, specifications in enumerate(tqdm(specification_blocks, desc="Making labels")):
+        for i, specifications in enumerate(tqdm(specification_blocks, desc="Making tiered image")):
             results = Parallel(n_jobs=self.parallel)(
                 delayed(self._compute_image_tiered_thread)(
                     specification["corner1"],
