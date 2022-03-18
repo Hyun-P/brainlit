@@ -1,3 +1,3 @@
 import brainlit.napari_viterbrain
 from brainlit.napari_viterbrain import *
-from brainlit.napari_viterbrain.viterbrain_plugin import napari_get_reader, napari_experimental_provide_dock_widget, NapariViterBrain
+from brainlit.napari_viterbrain.viterbrain_plugin import napari_get_reader

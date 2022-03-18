@@ -36,7 +36,7 @@ def napari_get_reader(path):
 
 
 @magic_factory(
-    call_button="Trace", start_comp={"max": 2**20}, end_comp={"max": 2**20}
+    call_button="Trace", start_comp={"max": 2**30}, end_comp={"max": 2**30}
 )
 def comp_trace(
     v: napari.Viewer,
@@ -44,6 +44,8 @@ def comp_trace(
     end_comp: int,
     filename=pathlib.Path("/some/path.pickle"),
 ):
+
+    print("Reading viterbrain object")
     with open(filename, "rb") as handle:
         viterbi = pickle.load(handle)
 
