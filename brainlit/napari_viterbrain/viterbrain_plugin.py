@@ -1,4 +1,5 @@
 import pickle
+from re import L
 
 from numpy import uint32
 import numpy as np
@@ -8,6 +9,7 @@ from qtpy.QtWidgets import QWidget, QHBoxLayout, QPushButton
 from magicgui import magic_factory
 import pathlib
 import napari
+import os
 
 
 def viterbrain_reader(path):
@@ -62,9 +64,16 @@ def comp_trace(
     start_pt = comp2point(start_comp)
     end_pt = comp2point(end_comp)
 
+    if not os.path.exists(viterbi.fragment_path):
+        print("Changing fragment path")
+        viterbi.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/BIL/image_labels_partial.zarr"
+
+
     print(f"tracing from {start_pt} to {end_pt}")
 
     path = viterbi.shortest_path(start_pt, end_pt)
+
+    print(f"Path: {path}")
 
     v.add_shapes(
         path,
