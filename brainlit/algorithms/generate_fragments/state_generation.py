@@ -426,8 +426,9 @@ class state_generation:
             radius = r
             close_enough = 9
 
+        # metric: wminkowski - minkowski
         A = radius_neighbors_graph(
-            coords, radius=radius, metric="wminkowski", metric_params={"w": res}
+            coords, radius=radius, metric="minkowski", metric_params={"w": res}
         )
         degrees = np.squeeze(np.array(np.sum(A, axis=1).T, dtype=int))
         indices = np.argsort(degrees)
